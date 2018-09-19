@@ -1,12 +1,11 @@
 
 // -- SETTINGS --------------
 
-
+var LABEL_NAME = 'pa - redundant_keyword_script';
+var DEBUG_MODE = true;
 
 // -- CONSTANTS ------------
-// don't change
-var LABEL_NAME = 'redundant_keyword_script';
-var DEBUG_MODE = true;
+var SEPARATOR = '_';
 
 // ------------------
 
@@ -74,8 +73,10 @@ function prepareKeywords( mapOfKeywordLists ) {
 
 function main() {
     Logger.log( 'start' );
-
-    Logger.log( 'create label' + LABEL_NAME );
+	
+	if( ! DEBUG_MODE ){
+		Logger.log( 'create label' + LABEL_NAME );
+	}
 
     AdWordsApp.createLabel( LABEL_NAME );
 
@@ -100,37 +101,34 @@ function main() {
 
     var keywordMap = {};
     iteratorToList( AdWordsApp.keywords().get() ).forEach( function( keyword ){
-        var key = keyword.getAdGroup().getId() + '_' + keyword.getId();
+        var key = keyword.getAdGroup().getId() + SEPARATOR + keyword.getId();
         keywordMap[ key ] = keyword;
     });
-
     
+	var warningIssued = false;
     Logger.log( 'label keywords' );
     keywordsToBeLabeled.forEach( function( keyword ){
-        var key = keyword.adgroupId + '_' + keyword.keywordId;
+        var key = keyword.adgroupId + SEPARATOR + keyword.keywordId;
         var keyword2 = keywordMap[ key ];
-        Logger.log(
-                'Campaign: ' + keyword2.getCampaign().getName() 
-                + ', Adgroup: '  + keyword2.getAdGroup().getName() 
-                + ', Keyword: ' + keyword.text
-        );
-        if( ! DEBUG_MODE ){
-            keyword2.applyLabel( LABEL_NAME );
-        }
+		if( keyword2 ){
+			Logger.log(
+					  'Campaign: '  + keyword2.getCampaign().getName()
+					+ ', Adgroup: ' + keyword2.getAdGroup().getName()
+					+ ', Keyword: ' + keyword.text
+			);
+			if( ! DEBUG_MODE ){
+				keyword2.applyLabel( LABEL_NAME );
+			}	
+		}else{
+			if( ! warningIssued ){
+				warningIssued = true;
+				Logger.log( 'if iterator exceeded limit of 50000 then keywords might be missing. ignore them' );
+			}
+		}
     });
 
 
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
