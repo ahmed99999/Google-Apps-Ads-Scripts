@@ -1,110 +1,143 @@
-function main() {  
-  
+
+// -- SETTINGS --------------
+
+
+
+// -- CONSTANTS ------------
+// don't change
+var LABEL_NAME = 'redundant_keyword_script';
+var DEBUG_MODE = true;
+
+// ------------------
+
+function searchForKeywordsToBeLabeled( keywordsOfOneAdgroup ){
+    var keywordsToBeLabeled = [];
+
+    keywordsOfOneAdgroup.forEach( function( keywordObj ){
+        var resultList = keywordsOfOneAdgroup.filter( function( keywordObjToBeLabeled ){
+            
+            if( keywordObj.adgroupId == keywordObjToBeLabeled.adgroupId 
+                && keywordObj.keywordId == keywordObjToBeLabeled.keywordId ){
+                    // same object. skip
+                return false;
+            }
+            var allWordsContained = keywordObj.words.map( function( word ){
+                return keywordObjToBeLabeled.words.indexOf( word ) >= 0;
+            }).reduce( function( a, b){
+                return a && b;
+            }, true );
+    
+            return allWordsContained;
+        });
+        keywordsToBeLabeled = keywordsToBeLabeled.concat( resultList );
+    });
+    return keywordsToBeLabeled;
+}
+
+function getReportRows(){
     var query = 'SELECT Id, CampaignId, Criteria, KeywordMatchType, AdGroupId '
-         + 'FROM KEYWORDS_PERFORMANCE_REPORT '
-         + 'WHERE KeywordMatchType = "BROAD" '
-            + 'AND IsNegative = "FALSE" ' 
-            + 'AND CampaignStatus = "ENABLED" ' 
-         + 'AND AdGroupStatus = "ENABLED" ' 
-         + 'AND Status = "ENABLED" ' 
-     ;
-   
-   AdWordsApp.createLabel('delete');
-   
-   var s = AdWordsApp.report(query).rows();
-   
-   var map = {};
-   while(s.hasNext()){
-         var item = s.next();
-         map[ item[ 'AdGroupId' ] ] = map[ item[ 'AdGroupId' ] ] || [];
-         map[ item[ 'AdGroupId' ] ].push( item );
-     
+        + 'FROM KEYWORDS_PERFORMANCE_REPORT '
+        + 'WHERE KeywordMatchType = "BROAD" '
+        + 'AND IsNegative = "FALSE" ' 
+        + 'AND CampaignStatus = "ENABLED" ' 
+        + 'AND AdGroupStatus = "ENABLED" ' 
+        + 'AND Status = "ENABLED" ' 
+    ;
+    var iterator = AdWordsApp.report( query ).rows();
+    return iteratorToList( iterator );
+}
+
+function iteratorToList( iter ){
+    var result = [];
+    while( iter.hasNext() ){
+        result.push( iter.next() );
     }
-   var matrix = [];
-   for( adgroupId in map ){
-     var keywords = map[ adgroupId ];
-     
-     for(var i =0;i<keywords.length;i++){
-           var crit = keywords[i].Criteria.split("+");
-           //Logger.log(keywords[i].AdGroupId +'  ==>' + keywords[i].Id);
-           crit.shift();
-           crit.unshift( keywords[i].Id);
-         crit.unshift( keywords[i].AdGroupId);
-           matrix[i] = crit;
- 
-     }  
-           Logger.log('======================================================>>>');
- 
-   for (var j=0 ; j<matrix.length;j++){
-    for (var i=0 ; i<matrix[j].length;i++){
-         matrix[j][i] = matrix[j][i].replace(/\s/g, "");
-          //Logger.log(matrix[j][i]);
+    return result;
+}
+
+function prepareKeywords( mapOfKeywordLists ) {
+    var result = {};
+
+    for( adgroupId in mapOfKeywordLists ){
+        result[ adgroupId ] = mapOfKeywordLists[ adgroupId ].map( function( keyword ){
+            return {
+                words :  keyword.Criteria.replace( /\+/g, '' ).split( ' ' ),
+                keywordId : keyword.Id,
+                adgroupId : keyword.AdGroupId,
+                text : keyword.Criteria,
+            };
+        });
     }
-       
-   }
- 
-   for (var i=0 ; i <matrix.length ;i++){   
-     
-       for(var j=0 ; j < matrix.length ; j++){
-       
-       var k = 2 ;      
-       var notTest = false;
-       
-       if (i != j && matrix[j][matrix[j].length - 1] != 'delete'){
-         while(k <matrix[i].length && notTest == false){
-           
-             var test = matrix[i][k] ;
-             if(matrix[j].indexOf(test) < 0){
-               notTest = true ;
-             }
-             k++;                    
-         } 
-         
-         if (notTest == false){
-               matrix[j].push('delete');      
-         }  
-       }
-     }
-     
-     
-   }
-   
-   
-   Logger.log('=========================================');
-   
-    for (var j=0 ; j<matrix.length;j++){
-         Logger.log(matrix[j]);
-      if ( matrix[j][matrix[j].length - 1] == 'delete'){
-        
-            var keyww = AdWordsApp.keywords().withCondition('Id = '+matrix[j][1]).withCondition('AdGroupId = '+matrix[j][0]).get();
-                keyww.next().applyLabel('delete');       
-       }
-                
-        
-   }
- 
-     
-   } 
-     
- }    
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+    return result;
+}
+
+function main() {
+    Logger.log( 'start' );
+
+    Logger.log( 'create label' + LABEL_NAME );
+
+    AdWordsApp.createLabel( LABEL_NAME );
+
+    Logger.log( 'retrieve report and prepare keywords' );
+
+    var mapOfKeywordLists = {};
+    getReportRows().forEach( function( row ){
+        var adgroupId =  row[ 'AdGroupId' ];
+        mapOfKeywordLists[ adgroupId ] = mapOfKeywordLists[ adgroupId ] || [];
+        mapOfKeywordLists[ adgroupId ].push( row );
+    });
+    var mapOfPreparedKeywords = prepareKeywords( mapOfKeywordLists );
+
+    Logger.log( 'search for keywords to be labeled' );
+
+    keywordsToBeLabeled = [];    
+    for( adgroupId in mapOfPreparedKeywords ){
+        keywordsToBeLabeled = keywordsToBeLabeled.concat( searchForKeywordsToBeLabeled( mapOfPreparedKeywords[ adgroupId ] ) );
+    }
+
+    Logger.log( 'Get a map of AdWords Keyword-Objects needed for labeling' );
+
+    var keywordMap = {};
+    iteratorToList( AdWordsApp.keywords().get() ).forEach( function( keyword ){
+        var key = keyword.getAdGroup().getId() + '_' + keyword.getId();
+        keywordMap[ key ] = keyword;
+    });
+
+    
+    Logger.log( 'label keywords' );
+    keywordsToBeLabeled.forEach( function( keyword ){
+        var key = keyword.adgroupId + '_' + keyword.keywordId;
+        var keyword2 = keywordMap[ key ];
+        Logger.log(
+                'Campaign: ' + keyword2.getCampaign().getName() 
+                + ', Adgroup: '  + keyword2.getAdGroup().getName() 
+                + ', Keyword: ' + keyword.text
+        );
+        if( ! DEBUG_MODE ){
+            keyword2.applyLabel( LABEL_NAME );
+        }
+    });
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
