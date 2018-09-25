@@ -37,46 +37,49 @@ function searchForKeywordsToBeLabeled( keywordsOfOneAdgroup ){
 function searchForKeywordsToBeLabeledAsPluralSingle( keywordsOfOneAdgroup ){
   var keywordsToBeLabeledAsPluralSingle = [];
    
-  for(var i = 0 ; i< keywordsOfOneAdgroup.length ;i++){
-      for(var j = 0 ; j < i ;j++){
+	for( var i = 0 ; i < keywordsOfOneAdgroup.length; i++ ){
+		for(var j = 0 ; j < i ;j++){
+			var keyword1 = keywordsOfOneAdgroup[ i ];
+			var keyword2 = keywordsOfOneAdgroup[ j ];
 
-          var groupI = keywordsOfOneAdgroup[i];
-          var groupJ = keywordsOfOneAdgroup[j];
-          
-          var statement =   i != j              
-              && keywordsToBeLabeledAsPluralSingle.indexOf(groupJ) < 0 
-              && keywordsToBeLabeledAsPluralSingle.indexOf(groupI) < 0 
-              && groupI.words.length !=  groupJ.words.length ;
+			var statement = i != j
+				&& keywordsToBeLabeledAsPluralSingle.indexOf( keyword2 ) < 0
+				&& keywordsToBeLabeledAsPluralSingle.indexOf( keyword1 ) < 0
+				&& keyword1.words.length !=  keyword2.words.length;
 
-          if (! statement) continue ;
-          if ( levenshtein(groupI.words , groupJ.words ) != 1 ) continue ;
-        
-          if (groupI.QualityScore < groupJ.QualityScore ){
-              keywordsToBeLabeledAsPluralSingle.push(groupI);
-          } else if (groupI.QualityScore > groupJ.QualityScore){
-              keywordsToBeLabeledAsPluralSingle.push(groupJ);
-          }else {
-              if (groupI.Clicks < groupJ.Clicks){
-                  keywordsToBeLabeledAsPluralSingle.push(groupI);
-              } else if(groupI.Clicks > groupJ.Clicks){
-                      keywordsToBeLabeledAsPluralSingle.push(groupJ);              
-              }else{
-                  if (groupI.Impressions < groupJ.Impressions){
-                  keywordsToBeLabeledAsPluralSingle.push(groupI);
-                  }else if(groupI.Impressions > groupJ.Impressions){
-                    keywordsToBeLabeledAsPluralSingle.push(groupJ);
-                  }else{
-                    if (groupI.words.length > groupJ.words.length){
-                      keywordsToBeLabeledAsPluralSingle.push(groupI);
-                    }else {
-                      keywordsToBeLabeledAsPluralSingle.push(groupJ);                        
-                    }
-                  }
-              }                    
-          }                      
-      }
-  }
-  return keywordsToBeLabeledAsPluralSingle;
+			if( ! statement ){
+				continue;
+			}
+			if( levenshtein( keyword1.words , keyword2.words ) != 1 ){
+				continue;
+			}
+
+			if( keyword1.QualityScore < keyword2.QualityScore ){
+				keywordsToBeLabeledAsPluralSingle.push( keyword1 );
+			} else if ( keyword1.QualityScore > keyword2.QualityScore ){
+				keywordsToBeLabeledAsPluralSingle.push( keyword2 );
+			} else {
+				if( keyword1.Clicks < keyword2.Clicks ){
+					keywordsToBeLabeledAsPluralSingle.push( keyword1 );
+				} else if( keyword1.Clicks > keyword2.Clicks ){
+					keywordsToBeLabeledAsPluralSingle.push( keyword2 );
+				}else{
+					if( keyword1.Impressions < keyword2.Impressions ){
+						keywordsToBeLabeledAsPluralSingle.push( keyword1 );
+					}else if( keyword1.Impressions > keyword2.Impressions ){
+						keywordsToBeLabeledAsPluralSingle.push( keyword2 );
+					}else{
+						if( keyword1.words.length > keyword2.words.length ){
+							keywordsToBeLabeledAsPluralSingle.push( keyword1 );
+						}else {
+							keywordsToBeLabeledAsPluralSingle.push( keyword2 );                        
+						}
+					}
+				}
+			}
+		}
+	}
+	return keywordsToBeLabeledAsPluralSingle;
 }
 
 
