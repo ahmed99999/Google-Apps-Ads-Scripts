@@ -2,76 +2,119 @@
 <html lang="en">
     <head>
         <title>HR Boot</title>
-        <style>
-            h1 {
-                text-align: center;
-            }
-            form {
-                margin-left: 50px;
-                margin-right: 50px;
-            }
-        </style>
-        <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <!--Import materialize.css-->
+        <link type="text/css" rel="stylesheet" href="node_modules/materialize-css/dist/css/materialize.min.css"  media="screen,projection"/>
+
     </head>
     <body>
-        <h1>HR-BOOT</h1>
-        <form>
-            <div class="form-group row">
-                <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg">URL :</label>
-                <div class="col-sm-10">
-                    <select class="custom-select custom-select-lg mb-3">
-                        <option value="https://dasauge.de/mitglieder/">Dasauge</option>
-                        <option value="https://www.creative-city-berlin.de/de/jobs/add/">Creative City Berlin</option>
-                        <option value="https://www.rockitdigital.de/account/job">Rock It Digital</option>
-                    </select>
-                </div>
+        <nav>
+            <div class="nav-wrapper">
+                <a class="brand-logo center">HR-BOOT</a>
             </div>
-            <div class="form-group row">
-                <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg">Login :</label>
-                <div class="col-sm-10">
-                    <input type="email" class="form-control form-control-lg" id="colFormLabelLg" >
+        </nav>
+        <!-- value="https://dasauge.de/mitglieder/" Dasauge
+        value="https://www.creative-city-berlin.de/de/jobs/add/" Creative City Berlin
+        value="https://www.rockitdigital.de/account/job" Rock It Digital -->
+
+        <div class="row" style="margin: 20px;">
+            <form class="col s12" id="iniatlForm">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <select>
+                            <option value="" disabled selected>Choose your Platform</option>
+                            <option value="https://dasauge.de/mitglieder/">Dasauge</option>
+                            <option value="https://www.creative-city-berlin.de/de/jobs/add/">Creative City Berlin</option>
+                            <option value="https://www.rockitdigital.de/account/job">Rock It Digital</option>
+                        </select>
+                        <label>Select</label>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">    
-                <label for="colFormLabelLg" class="col-sm-4 col-form-label col-form-label-lg">Password :</label>
-                <div class="col-sm-6">
-                    <input type="password" class="form-control form-control-lg" id="colFormLabelLg">
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input id="login" type="text" class="validate">
+                        <label for="login">Login</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="password" type="password" class="validate">
+                        <label for="password">Password</label>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">    
-                <label for="colFormLabelLg" class="col-sm-4 col-form-label col-form-label-lg">Company-Name :</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control form-control-lg" id="colFormLabelLg">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="company" type="text" class="validate">
+                        <label for="company">Company Name</label>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">    
-                <label for="colFormLabelLg" class="col-sm-4 col-form-label col-form-label-lg">Browser-Fenster anzeigen :</label>
-                <div class="col-sm-6">
-                    <input type="checkbox" class="checkbox form-control form-control-lg" id="colFormLabelLg">
+                <div class="row">
+                    <div class="file-field input-field col s10">
+                        <div class="btn">
+                          <span>File</span>
+                          <input type="file" id="exelFile">
+                        </div>
+                        <div class="file-path-wrapper">
+                          <input class="file-path validate" type="text">
+                        </div>
+                    </div>
+                    <div class="input-field col s2">
+                        <a class="waves-effect waves-light btn-small" id="validateExel">Validate</a>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">    
-                <label for="colFormLabelLg" class="col-sm-4 col-form-label col-form-label-lg">Bestehende Ausschreibungen löschen :</label>
-                <div class="col-sm-6">
-                    <input type="checkbox" class="checkbox form-control form-control-lg" id="colFormLabelLg">
+                <div class="row">
+                    <div class="input-field col s6">
+                        <label for="">Browser-Fenster anzeigen :</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <div class="switch">
+                            <label>
+                              Off
+                              <input type="checkbox">
+                              <span class="lever"></span>
+                              On
+                            </label>
+                          </div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">    
-                <label for="colFormLabelLg" class="col-sm-4 col-form-label col-form-label-lg">Ausschreibungen anlegen :</label>
-                <div class="col-sm-6">
-                    <input type="checkbox" class="checkbox form-control form-control-lg" id="colFormLabelLg">
+                <div class="row">
+                    <div class="input-field col s6">
+                        <label for="">Bestehende Ausschreibungen löschen :</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <div class="switch">
+                            <label>
+                              Off
+                              <input type="checkbox">
+                              <span class="lever"></span>
+                              On
+                            </label>
+                          </div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">    
-                <label for="colFormLabelLg" class="col-sm-4 col-form-label col-form-label-lg">Load Xcel File</label>
-                <div class="col-sm-6">
-                    <button type="button" class="btn btn-secondary">Secondary</button>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <label for="">Ausschreibungen anlegen :</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <div class="switch">
+                            <label>
+                              Off
+                              <input type="checkbox">
+                              <span class="lever"></span>
+                              On
+                            </label>
+                          </div>
+                    </div>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-primary">start BOT</button>
-        </form>
-        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+                <div class="row" style="margin-top: 40px;" >
+                    <div class="input-field col s12 center">
+                        <button class="btn waves-effect waves-light btn-large" type="submit" name="action">Start BOOT</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script src="mainWindow.js"></script>
+        <!-- <script type="text/javascript" src="node_modules/materialize-css/dist/js/materialize.min.js"></script> -->
     </body>
 </html>

@@ -4,12 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "electron ."
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ahmed Bakhabou",
   "license": "ISC",
   "dependencies": {
-    "electron": "^7.1.9",
-    "materialize-css": "^1.0.0-rc.2"
+    "electron": "^7.1.9"
   }
 }
