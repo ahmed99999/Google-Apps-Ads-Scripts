@@ -1,7 +1,9 @@
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
-const { app, BrowserWindow } = electron;
+const FileWrapper = require ('./handelfile');
+
+const { app, BrowserWindow, ipcMain } = electron;
 let mainWindow;
 
 // listen for the app to be ready
@@ -19,4 +21,10 @@ app.on( 'ready', function (){
          protocol: 'file:',
          slashes: true
      }));
+});
+
+// ctach file:path
+
+ipcMain.on( 'file:path', ( evt, filePath ) => {
+    file = FileWrapper.getFile( filePath );
 });
