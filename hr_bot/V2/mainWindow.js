@@ -13,7 +13,7 @@ const validateExelFile = exelFile => {
 
 document.addEventListener('DOMContentLoaded', function() {
     const elems = document.querySelectorAll('select');
-    const instances = M.FormSelect.init(elems);
+    const instances = M.FormSelect.init( elems );
     const form = document.querySelector('#iniatlForm');
     form.addEventListener('submit', startBoot );
 
