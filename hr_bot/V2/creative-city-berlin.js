@@ -79,12 +79,12 @@ const DOM_IDS = {
             'Werbung & PR': "#id_categories_12",
             'Sonstiges': "#id_categories_13"
         },
-        submit : 'input[type="submit"]'
+        submit : 'input[value="Weiter"]'
     },
     last_page: {
         kulturmanagement : "#id_report_kulturmanagement",
         talent_in_berlin: "#id_report_talent_in_berlin",
-        submit : 'input[type="submit"]'
+        submit : 'input[value="Weiter"]'
     }
 };
 
@@ -112,13 +112,16 @@ const firstPage = async ( file, page ) => {
     await page.type ( DOM_IDS['first_page']['Zip'], file[ 'Zip'.toLowerCase() ].toString() );
     await page.type ( DOM_IDS['first_page']['Ort'], file[ 'Ort'.toLowerCase() ] );
     await page.type ( DOM_IDS['first_page']['Land'], file[ 'Land'.toLowerCase() ] );
-
+    
     if ( file["ich bin der ansprechpartner".toLowerCase()].trim() !== "" )
         await page.click ( DOM_IDS['first_page']["ich bin der ansprechpartner"] );
     if ( file["ich bin nicht der ansprechpartner".toLowerCase()].trim() !== "" ){
         await page.click ( DOM_IDS['first_page']['ich bin nicht der ansprechpartner']['id'] );
         await page.type ( DOM_IDS['first_page']['ich bin nicht der ansprechpartner']['input'], file["ich bin nicht der ansprechpartner".toLowerCase()] );
     }
+    await page.type ( DOM_IDS['first_page']['Telefon']['phone_number'], file[ 'Telefon'.toLowerCase() ].toString().replace(/^(49)/, '') );
+    await page.type ( DOM_IDS['first_page']['Fax']['fax_numbder'], file[ 'Fax'.toLowerCase() ].toString().replace(/^(49)/, '') );
+
     await page.type ( DOM_IDS['first_page']['Website'], file[ 'Website'.toLowerCase() ] ); 
 
     await page.click( DOM_IDS.first_page.submit );
@@ -128,19 +131,19 @@ const secondPage = async ( file, page ) => {
     await page.goto ( page.url() );
     const Jobbereiches = file['Jobbereiche'.toLowerCase()].split(',').map( job => job.toLowerCase().trim() );
     const jobCategories = file['Kategorien'.toLowerCase()].split(',').map( jobOffer => jobOffer.toLowerCase().trim() );
-    Object.keys( DOM_IDS['second_page']['Jobbereiche'] ).forEach( async key => {
+
+    for ( let index = 0; index < Object.keys( DOM_IDS['second_page']['Jobbereiche'] ).length; index++) {
+        let key = Object.keys( DOM_IDS['second_page']['Jobbereiche'] )[ index ];
         if ( Jobbereiches.includes( key.toLowerCase() ) ){
-            await page.click( DOM_IDS['second_page']['Jobbereiche'][ key ] );    
-            console.log( key.trim() );
+            await page.click( DOM_IDS['second_page']['Jobbereiche'][ key ] );
         }
-    });
-    // await page.click( DOM_IDS['second_page']['Jobbereiche']['Marketing'] );
+    }
     await page.type ( DOM_IDS['second_page']['Stichworte'], file['Stichworte'.toLowerCase()]);
     Object.keys( DOM_IDS['second_page']['Kategorien']).forEach( async key =>{
         if ( jobCategories.includes( key.toLowerCase() ) )
             await page.click ( DOM_IDS['second_page']['Kategorien'][key] );
     });
-    // await page.click( DOM_IDS['second_page']['submit'] );
+    await page.click( DOM_IDS['second_page']['submit'] );
 };
 
 const lastPage = async ( page ) => {
@@ -150,55 +153,14 @@ const lastPage = async ( page ) => {
     // await page.click( DOM_IDS['last_page']['submit'] );
 };
 
-const fillTheForm = async ( exelFileData, page ) => {
+const fillTheForm = async ( exelFileData, page, url ) => {
 
     exelFileData.forEach( async function( file ){
+        await page.goto( url );
         await firstPage( file, page );
         await secondPage( file, page );
-        // await lastPage( page );
+        await lastPage( page );
     });
-
-    // exelFileData.forEach( file =>{
-    // Object.keys( DOM_IDS['first_page'] ).forEach( async key => {
-    //     if ( key == 'submit' || typeof key !== 'string' ) return;
-    //     const key2 = key.toLowerCase().trim();
-    //     await page.type( DOM_IDS['first_page'][ key ], file[ key2 ] );
-    //     // console.log( file[ key2 ] );
-    //     // console.log( DOM_IDS.first_page[ key ] );
-    // });
-    // });
-    // try {
-    //     if ( key2 == 'Qualifikation'.toLowerCase().trim() ){
-    //         await page.type( DOM_IDS.first_page['Qualifikation']['junior'], file[ key2 ] );
-    //         return;
-    //     }
-    //     if ( key2 == 'ich bin der ansprechpartner'.toLowerCase().trim() ){
-    //         if ( file[ key2 ].trim() !== "" )
-    //             await page.click( DOM_IDS.first_page['ich bin der ansprechpartner']);
-    //         return;
-    //     }
-    //     if ( key2 == 'ich bin nicht der ansprechpartner'.toLowerCase().trim() ){
-    //         if ( file[ key2 ].trim() !== "" ){
-    //             await page.click( DOM_IDS.first_page['ich bin nicht der ansprechpartner']['id']);
-    //             await page.type( DOM_IDS.first_page['ich bin nicht der ansprechpartner']['input'], file[ key2 ] );
-    //         }
-    //         return;
-    //     }
-    //     if ( key2 == 'Telefon'.toLowerCase().trim() ){
-    //         if ( file[ key2 ].trim() !== "" )
-    //             await page.type( DOM_IDS.first_page['Telefon']['phone_number'], file[ key2 ]);
-    //         return;
-    //     }
-    //     if ( key2 == 'Fax'.toLowerCase().trim() ){
-    //         if ( file[ key2 ].trim() !== "" )
-    //             await page.type( DOM_IDS.first_page['Fax']['fax_numbder'], file[ key2 ]);
-    //         return;
-    //     }
-    //     await page.type( DOM_IDS.first_page[key2] , file[ key2 ]);
-    // } catch (error) {
-    //     console.log( error );
-    //     console.log( file[ key2 ] );
-    // }
 };
 
 module.exports.logIn = logIn;

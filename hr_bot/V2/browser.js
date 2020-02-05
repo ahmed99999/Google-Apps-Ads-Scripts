@@ -1,6 +1,7 @@
 
 const puppeteer = require('puppeteer');
 const creativeCityBerlin = require('./creative-city-berlin');
+// const rockItDigital = require( './rockitdegital' );
 
 const openBrowser = async ( url, data, headLess, file ) => {
     const browser = await puppeteer.launch({
@@ -17,11 +18,12 @@ const openBrowser = async ( url, data, headLess, file ) => {
     const title = await page.title();
     if ( title.includes( title ) ){
         await creativeCityBerlin.logIn( data['login'], data['password'], page );
-        await page.goto( url );
     }
 
     if ( data['platform'].toLowerCase().includes( 'creative' ) )
-        await creativeCityBerlin.fillTheForm( file['Creative City'], page );
+        await creativeCityBerlin.fillTheForm( file['Creative City'], page, url );
+
+    // if ( data['platform'].toLowerCase().includes( 'rockitdigital' ) ){}
 };
 
 module.exports.openBrowser = openBrowser;
