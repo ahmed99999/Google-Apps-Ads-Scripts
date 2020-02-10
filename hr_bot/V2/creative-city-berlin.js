@@ -92,6 +92,8 @@ const DEFAULT_LOGIN = "a.bakhabou@pa.ag";
 const DEFAULT_PASSWORD = "test";
 
 const logIn = async ( login, password, page ) => {
+    const title = await page.title();
+    if ( ! title.toLowerCase().includes( 'login' ) ) return await page;
     login = login || DEFAULT_LOGIN;
     password = password || DEFAULT_PASSWORD;
 
@@ -150,7 +152,7 @@ const lastPage = async ( page ) => {
     await page.goto ( page.url() );
     await page.click( DOM_IDS['last_page']['kulturmanagement'] );
     await page.click( DOM_IDS['last_page']['talent_in_berlin'] );
-    // await page.click( DOM_IDS['last_page']['submit'] );
+    await page.click( DOM_IDS['last_page']['submit'] );
 };
 
 const fillTheForm = async ( exelFileData, page, url ) => {
