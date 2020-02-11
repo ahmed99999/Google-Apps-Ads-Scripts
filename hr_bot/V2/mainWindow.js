@@ -38,5 +38,5 @@ const startBoot = ( evt ) => {
     const { platform } = data;
     const filePath = FileWrapper.getFilePath( excelFile );
     const file = FileWrapper.getFile( filePath );
-    Browser.openBrowser( platform , data, data["Browser-Fenster anzeigen"], file );
+    Browser.openBrowser( platform , data, data["Browser-Fenster anzeigen"], file, alert );
 };

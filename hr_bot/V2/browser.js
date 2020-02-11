@@ -3,7 +3,10 @@ const puppeteer = require('puppeteer');
 const creativeCityBerlin = require('./creative-city-berlin');
 const rockItDigital = require( './rockitdegital' );
 
-const openBrowser = async ( url, data, headLess, file ) => {
+const openBrowser = async ( url, data, headLess, file, alert ) => {
+    creativeCityBerlin.validateExcelFile( file['Creative City'], alert );
+    rockItDigital.validateExcelFile( file['RockITdigital'], alert);
+
     const browser = await puppeteer.launch({
         headless: !headLess
     });

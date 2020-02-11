@@ -67,6 +67,8 @@ const DOM_IDS = {
             'Sales / Vertrieb Allgemein':"#job_category_28",
             'Sonstiges':"#job_category_17"
         },
+        'plz, ort':"#",
+        'untick the box':"#",
         'Berufserfahrung': {
             'Keine'     :"#job_level_1",
             'Erste'     :"#job_level_2",
@@ -117,36 +119,46 @@ const logIn = async ( login, password, page ) => {
 };
 
 const firstPage = async ( file, page ) => {
-    const frames = await page.frames();
-    frames.forEach( f => console.log( f ));
-    // await page.type( DOM_IDS['first_page']['Job-Titel / Position'], file['Job-Titel / Position'.toLowerCase()]);
-    // // await page.type ( DOM_IDS['first_page']['Beschreibung'], file[ 'Beschreibung'.toLowerCase() ]);
-    // await page.type( DOM_IDS['first_page']['Anstellung'], file[ 'Anstellung'.toLowerCase() ]);
-    // await page.type ( DOM_IDS['first_page']['Vertrag'], file[ 'Vertrag'.toLowerCase() ]);
+    // const frames = await page.frames();
+
+    // frames.forEach( async (myframe, index )=> {
+    //     // await myframe.goto ( myframe.url() );
+    //     console.log( index );
+    //     const title = await myframe.title();
+    //     console.log( title );
+    //     const paragraph = await myframe.$('p');
+    //     if ( paragraph == null ) return;
+    //     myframe.type( '', 'framer' );
+    // });
+
+    await page.type( DOM_IDS['first_page']['Job-Titel / Position'], file['Job-Titel / Position'.toLowerCase()]);
+    // await page.type ( DOM_IDS['first_page']['Beschreibung'], file[ 'Beschreibung'.toLowerCase() ]);
+    await page.type( DOM_IDS['first_page']['Anstellung'], file[ 'Anstellung'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['Vertrag'], file[ 'Vertrag'.toLowerCase() ]);
     
-    // const kategories = file['Kategorie(n) *(maximal 2)'.toLowerCase()].split(',').map( cat => cat.trim() );
-    // for (let index = 0; index < kategories.length; index++) {
-    //     console.log( kategories[ index ] );
-    //     await page.click( DOM_IDS['first_page']['Kategorie(n) *(maximal 2)'][ kategories[ index ] ]);
-    // }
-    // const jobLevels = file['Berufserfahrung'.toLowerCase() ].split(',').map( level => level.trim() );
-    // for (let index = 0; index < jobLevels.length; index++) {
-    //     await page.click( DOM_IDS['first_page']['Berufserfahrung'][ jobLevels[ index ] ]);
-    // }
-    // await page.type ( DOM_IDS['first_page']['Bewerbung auf folgender Website'], file['Bewerbung auf folgender Website'.toLowerCase() ]);
-    // await page.type ( DOM_IDS['first_page']['oder Bewerbung per Email'], file['oder Bewerbung per Email'.toLowerCase() ]);
-    // if( file['Gewünschtes Eintrittsdatum'.toLowerCase()].trim() !== 'sofort' ){
-    //     console.log( file['Gewünschtes Eintrittsdatum'.toLowerCase()] );
-    // }
-    // await page.type ( DOM_IDS['first_page']['Ansprechpartner'], file[ 'Ansprechpartner'.toLowerCase() ]);
-    // await page.type ( DOM_IDS['first_page']['Unternehmen'], file[ 'Unternehmen'.toLowerCase() ]);
-    // await page.type ( DOM_IDS['first_page']['Straße'], file[ 'Straße'.toLowerCase() ]);
-    // const plzOrt = file['PLZ, Ort'.toLowerCase()].split(',').map( adr => adr.toString().trim() );
-    // await page.type ( DOM_IDS['first_page']['PLZ'], plzOrt[0] );
-    // await page.type ( DOM_IDS['first_page']['Ort'], plzOrt[1] );
-    // await page.type ( DOM_IDS['first_page']['Webseite'], file[ 'Webseite'.toLowerCase() ]);
-    // await page.type ( DOM_IDS['first_page']['Video Link'], file['Video Link'.toLowerCase() ]);
-    // await page.click( DOM_IDS['first_page']['kivaplus']);
+    const kategories = file['Kategorie(n) *(maximal 2)'.toLowerCase()].split(',').map( cat => cat.trim() );
+    for (let index = 0; index < kategories.length; index++) {
+        console.log( kategories[ index ] );
+        await page.click( DOM_IDS['first_page']['Kategorie(n) *(maximal 2)'][ kategories[ index ] ]);
+    }
+    const jobLevels = file['Berufserfahrung'.toLowerCase() ].split(',').map( level => level.trim() );
+    for (let index = 0; index < jobLevels.length; index++) {
+        await page.click( DOM_IDS['first_page']['Berufserfahrung'][ jobLevels[ index ] ]);
+    }
+    await page.type ( DOM_IDS['first_page']['Bewerbung auf folgender Website'], file['Bewerbung auf folgender Website'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['oder Bewerbung per Email'], file['oder Bewerbung per Email'.toLowerCase() ]);
+    if( file['Gewünschtes Eintrittsdatum'.toLowerCase()].trim() !== 'sofort' ){
+        console.log( file['Gewünschtes Eintrittsdatum'.toLowerCase()] );
+    }
+    await page.type ( DOM_IDS['first_page']['Ansprechpartner'], file[ 'Ansprechpartner'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['Unternehmen'], file[ 'Unternehmen'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['Straße'], file[ 'Straße'.toLowerCase() ]);
+    const plzOrt = file['PLZ, Ort'.toLowerCase()].split(',').map( adr => adr.toString().trim() );
+    await page.type ( DOM_IDS['first_page']['PLZ'], plzOrt[0] );
+    await page.type ( DOM_IDS['first_page']['Ort'], plzOrt[1] );
+    await page.type ( DOM_IDS['first_page']['Webseite'], file[ 'Webseite'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['Video Link'], file['Video Link'.toLowerCase() ]);
+    await page.click( DOM_IDS['first_page']['kivaplus']);
     // await page.click( DOM_IDS['first_page']['submit'] );
 
 };
@@ -156,10 +168,35 @@ const secondPage = async ( page ) => {
     await page.click( DOM_IDS['second_page']['submit']);
 };
 
-const fillTheForm = async ( exelFileData, page, url ) => {
-    // console.log( url );
-    // await page.goto( url );
+const lastPage = async ( page ) => {
+    await page.goto ( page.url() );
+    await page.click( DOM_IDS['last_page']['submit']);
+};
 
+const getestedFileKeys = ( file , keys ) => {
+    fileKeys = Object.keys( file );
+    fileKeys.forEach( key => { 
+        keys.push( key );
+        if ( typeof file[ key ] !== 'string' ) 
+            getestedFileKeys( file[ key ], keys );
+    });
+    return keys;
+};
+
+const validateExcelFile = (file, alert ) => {
+    domKeys = getestedFileKeys( DOM_IDS, [] ).map( f => f.toLowerCase() );
+    fileKeys = Object.keys( file[0] );
+    fileKeys.forEach( file => {
+        if ( !domKeys.includes( file.trim() ) ){
+            alert( 'check your ExcelFile ' );
+            throw new Error( 'check your ExcelFile ')
+        };
+    });
+    alert( 'validation successeded');
+    console.log( 'validation successeded');
+};
+
+const fillTheForm = async ( exelFileData, page, url ) => {
     exelFileData.forEach( async function( file ){
         await page.goto( url );
         await firstPage( file, page );
@@ -170,3 +207,4 @@ const fillTheForm = async ( exelFileData, page, url ) => {
 
 module.exports.logIn = logIn;
 module.exports.fillTheForm = fillTheForm;
+module.exports.validateExcelFile = validateExcelFile;

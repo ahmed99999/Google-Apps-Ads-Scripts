@@ -12,6 +12,7 @@ const DOM_IDS = {
             'senior'    : "#id_qualifications_3",
             'n/a'       : "#id_qualifications_4"
         },
+        'Veröffentlichen bis':"#",
         Beschreibung: "#id_description",
         Jobanbieter : 'dd[class="institution-select"] input[type="text"]',
         'Strasse/Hausnummer' : "#id_street_address",
@@ -165,5 +166,30 @@ const fillTheForm = async ( exelFileData, page, url ) => {
     });
 };
 
+const getestedFileKeys = ( file , keys ) => {
+    fileKeys = Object.keys( file );
+    fileKeys.forEach( key => { 
+        keys.push( key );
+        if ( typeof file[ key ] !== 'string' ) 
+            getestedFileKeys( file[ key ], keys );
+    });
+    return keys;
+};
+
+const validateExcelFile = (file, alert) => {
+    domKeys = getestedFileKeys( DOM_IDS, [] ).map( f => f.toLowerCase() );
+    fileKeys = Object.keys( file[0] );
+    fileKeys.forEach( file => {
+        if ( !domKeys.includes( file ) ) {
+            alert( 'check your ExcelFile ')
+            throw new Error( 'check your ExcelFile ');
+        }
+    });
+    alert( 'validation successeded');
+
+    console.log( 'validation successeded');
+};
+
 module.exports.logIn = logIn;
 module.exports.fillTheForm = fillTheForm;
+module.exports.validateExcelFile = validateExcelFile;

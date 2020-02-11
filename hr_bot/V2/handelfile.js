@@ -1,5 +1,7 @@
 
 const xlsx = require('node-xlsx').default;
+const creativeCityBerlin = require('./creative-city-berlin');
+const rockItDigital = require('./rockitdegital');
 
 const KEYS_ROW = 1;
 
@@ -38,5 +40,11 @@ const getFilePath = exelFile => {
     return filePath;
 };
 
+const validateExcelFile = (file, toast ) => {
+    creativeCityBerlin.validateExcelFile( file['Creative City'], toast );
+    rockItDigital.validateExcelFile( file['RockITdigital'], toast );
+};
+
 module.exports.getFile = getFile;
 module.exports.getFilePath = getFilePath;
+module.exports.validateExcelFile = validateExcelFile;
