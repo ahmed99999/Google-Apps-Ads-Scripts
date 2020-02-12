@@ -70,8 +70,8 @@ const DOM_IDS = {
         'plz, ort':"#",
         'untick the box':"#",
         'Berufserfahrung': {
-            'Keine'     :"#job_level_1",
-            'Erste'     :"#job_level_2",
+            'Keine'      :"#job_level_1",
+            'Erste'      :"#job_level_2",
             'Mehrjährige':"#job_level_3",
             'Langjährige':"#job_level_4"
         },
@@ -121,16 +121,24 @@ const logIn = async ( login, password, page ) => {
 const firstPage = async ( file, page ) => {
     // const frames = await page.frames();
 
-    // frames.forEach( async (myframe, index )=> {
+    // frames.forEach( async ( myframe, index ) => {
     //     // await myframe.goto ( myframe.url() );
-    //     console.log( index );
-    //     const title = await myframe.title();
-    //     console.log( title );
-    //     const paragraph = await myframe.$('p');
-    //     if ( paragraph == null ) return;
-    //     myframe.type( '', 'framer' );
+    //     const children = await myframe.childFrames();
+    //     if ( children.length > 0 ){
+    //         console.log( children[0] );
+    //         // await children[0].setContent(`<html><head><style id="mceDefaultStyles" type="text/css">.mce-content-body div.mce-resizehandle {position: absolute;border: 1px solid black;background: #FFF;width: 5px;height: 5px;z-index: 10000}.mce-content-body .mce-resizehandle:hover {background: #000}.mce-content-body img[data-mce-selected], hr[data-mce-selected] {outline: 1px solid black;resize: none}.mce-content-body .mce-clonedresizable {position: absolute;outline: 1px dashed black;opacity: .5;filter: alpha(opacity=50);z-index: 10000}
+    //         // </style><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link type="text/css" rel="stylesheet" href="https://www.rockitdigital.de/tinymce/skins/lightgray/content.min.css"><link type="text/css" rel="stylesheet" href="https://www.rockitdigital.de/editor.css"></head><body id="tinymce" class="mce-content-body " onload="window.parent.tinymce.get('description').fire('load');" contenteditable="true" spellcheck="false"><p>${file[ 'Beschreibung'.toLowerCase() ]}</p></body></html>`);
+    //         const content = await children[0].title();
+    //         console.log( content );
+    //     }
+    //     // const paragraph = await myframe.$('p');
+    //     // if ( paragraph == null ) return;
+    //     // myframe.type( '', 'framer' );
     // });
-
+    const frame = await page.$('#description_ifr');
+    const p = await frame.content();
+    console.log( p );
+    return;
     await page.type( DOM_IDS['first_page']['Job-Titel / Position'], file['Job-Titel / Position'.toLowerCase()]);
     // await page.type ( DOM_IDS['first_page']['Beschreibung'], file[ 'Beschreibung'.toLowerCase() ]);
     await page.type( DOM_IDS['first_page']['Anstellung'], file[ 'Anstellung'.toLowerCase() ]);
@@ -159,7 +167,7 @@ const firstPage = async ( file, page ) => {
     await page.type ( DOM_IDS['first_page']['Webseite'], file[ 'Webseite'.toLowerCase() ]);
     await page.type ( DOM_IDS['first_page']['Video Link'], file['Video Link'.toLowerCase() ]);
     await page.click( DOM_IDS['first_page']['kivaplus']);
-    // await page.click( DOM_IDS['first_page']['submit'] );
+    await page.click( DOM_IDS['first_page']['submit'] );
 
 };
 
@@ -177,32 +185,37 @@ const getestedFileKeys = ( file , keys ) => {
     fileKeys = Object.keys( file );
     fileKeys.forEach( key => { 
         keys.push( key );
-        if ( typeof file[ key ] !== 'string' ) 
+        if ( typeof file[ key ] !== 'string' )
             getestedFileKeys( file[ key ], keys );
     });
     return keys;
 };
 
-const validateExcelFile = (file, alert ) => {
+const validateExcelFile = ( file, alert ) => {
     domKeys = getestedFileKeys( DOM_IDS, [] ).map( f => f.toLowerCase() );
     fileKeys = Object.keys( file[0] );
-    fileKeys.forEach( file => {
+
+    for (let index = 0; index < fileKeys.length; index++) {
+        const file = fileKeys[index];
         if ( !domKeys.includes( file.trim() ) ){
-            alert( 'check your ExcelFile ' );
-            throw new Error( 'check your ExcelFile ')
-        };
-    });
-    alert( 'validation successeded');
-    console.log( 'validation successeded');
+            alert( 'something is wrong with ExcelFile data, Not matching to the webiste. Please check it again' );
+            return false;
+        }
+    }
+    return true;
 };
 
 const fillTheForm = async ( exelFileData, page, url ) => {
-    exelFileData.forEach( async function( file ){
+
+    for ( let index = 0; index < exelFileData.length ; index++){
+        const file = exelFileData[index];
         await page.goto( url );
+
         await firstPage( file, page );
-        // await secondPage( page );
+        // await secondPage( file, page );
         // await lastPage( page );
-    });
+    }
+    console.log( 'done' );
 };
 
 module.exports.logIn = logIn;

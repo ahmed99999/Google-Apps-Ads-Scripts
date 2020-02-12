@@ -158,12 +158,15 @@ const lastPage = async ( page ) => {
 
 const fillTheForm = async ( exelFileData, page, url ) => {
 
-    exelFileData.forEach( async function( file ){
+    for ( let index = 0; index < exelFileData.length ; index++){
+        const file = exelFileData[index];
         await page.goto( url );
+
         await firstPage( file, page );
         await secondPage( file, page );
         await lastPage( page );
-    });
+    }
+    console.log( 'done' );
 };
 
 const getestedFileKeys = ( file , keys ) => {
@@ -179,15 +182,14 @@ const getestedFileKeys = ( file , keys ) => {
 const validateExcelFile = (file, alert) => {
     domKeys = getestedFileKeys( DOM_IDS, [] ).map( f => f.toLowerCase() );
     fileKeys = Object.keys( file[0] );
-    fileKeys.forEach( file => {
-        if ( !domKeys.includes( file ) ) {
-            alert( 'check your ExcelFile ')
-            throw new Error( 'check your ExcelFile ');
+    for (let index = 0; index < fileKeys.length; index++) {
+        const file = fileKeys[index];
+        if ( !domKeys.includes( file.trim() ) ){
+            alert( 'something is wrong with ExcelFile data, Not matching to the webiste. Please check it again' );
+            return false;
         }
-    });
-    alert( 'validation successeded');
-
-    console.log( 'validation successeded');
+    }
+    return true;
 };
 
 module.exports.logIn = logIn;
