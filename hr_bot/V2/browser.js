@@ -14,6 +14,7 @@ const openBrowser = async ( url, data, headLess, file, alert ) => {
     }
 
     if ( ! validation ) return;
+    
     const browser = await puppeteer.launch({
         headless: !headLess
     });
