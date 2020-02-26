@@ -119,43 +119,19 @@ const logIn = async ( login, password, page ) => {
 };
 
 const firstPage = async ( file, page ) => {
-    // const frames = await page.frames();
-    // frames.forEach( async ( myframe ) => {
-    //     const pa = await myframe.content();
-    //     console.log( pa );
-    //     // const paragraph = await pa.$( '#tinymce' );
-    //     // await myframe.goto ( myframe );
-    //     // const children = await myframe.childFrames();
-    //     // if ( children.length > 0 ){
-    //     //     console.log( children[0] );
-    //     //     // await children[0].setContent(`<html><head><style id="mceDefaultStyles" type="text/css">.mce-content-body div.mce-resizehandle {position: absolute;border: 1px solid black;background: #FFF;width: 5px;height: 5px;z-index: 10000}.mce-content-body .mce-resizehandle:hover {background: #000}.mce-content-body img[data-mce-selected], hr[data-mce-selected] {outline: 1px solid black;resize: none}.mce-content-body .mce-clonedresizable {position: absolute;outline: 1px dashed black;opacity: .5;filter: alpha(opacity=50);z-index: 10000}
-    //     //     // </style><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link type="text/css" rel="stylesheet" href="https://www.rockitdigital.de/tinymce/skins/lightgray/content.min.css"><link type="text/css" rel="stylesheet" href="https://www.rockitdigital.de/editor.css"></head><body id="tinymce" class="mce-content-body " onload="window.parent.tinymce.get('description').fire('load');" contenteditable="true" spellcheck="false"><p>${file[ 'Beschreibung'.toLowerCase() ]}</p></body></html>`);
-    //     //     const content = await children[0].title();
-    //     //     console.log( content );
-    //     // }
-    //     // const paragraph = await myframe.$('p');
-    //     // if ( paragraph == null ) return;
-    //     // myframe.type( '', 'framer' );
-    // });
-    // return;
-    // frame.parentNode.removeChild( frame );
-    const content = "'" + file[ 'Beschreibung'.toLowerCase() ].toString() + "'";
-
     await page.addScriptTag({
-        content: `const frame = document.querySelector( '#description_ifr' );
-        const papa = frame.contentWindow.document.querySelector('#tinymce > p');
-        console.log( papa );
-        papa.innerText = "${content}";`
+        content: `
+            const frame = document.querySelector( '#description_ifr' );
+            frame.id = 'description';
+            `
     });
-    // return;
     await page.type( DOM_IDS['first_page']['Job-Titel / Position'], file['Job-Titel / Position'.toLowerCase()]);
-    // await page.type ( DOM_IDS['first_page']['Beschreibung'], file[ 'Beschreibung'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['Beschreibung'], file[ 'Beschreibung'.toLowerCase() ]);
     await page.type( DOM_IDS['first_page']['Anstellung'], file[ 'Anstellung'.toLowerCase() ]);
     await page.type ( DOM_IDS['first_page']['Vertrag'], file[ 'Vertrag'.toLowerCase() ]);
     
     const kategories = file['Kategorie(n) *(maximal 2)'.toLowerCase()].split(',').map( cat => cat.trim() );
     for (let index = 0; index < kategories.length; index++) {
-        console.log( kategories[ index ] );
         await page.click( DOM_IDS['first_page']['Kategorie(n) *(maximal 2)'][ kategories[ index ] ]);
     }
     const jobLevels = file['Berufserfahrung'.toLowerCase() ].split(',').map( level => level.trim() );
@@ -176,18 +152,30 @@ const firstPage = async ( file, page ) => {
     await page.type ( DOM_IDS['first_page']['Webseite'], file[ 'Webseite'.toLowerCase() ]);
     await page.type ( DOM_IDS['first_page']['Video Link'], file['Video Link'.toLowerCase() ]);
     await page.click( DOM_IDS['first_page']['kivaplus']);
-    // await page.click( DOM_IDS['first_page']['submit'] );
+    await page.click( DOM_IDS['first_page']['submit'] );
 
 };
 
 const secondPage = async ( page ) => {
-    await page.goto ( page.url() );
-    await page.click( DOM_IDS['second_page']['submit']);
+    await page.addScriptTag({
+        content: `
+        document.addEventListener('DOMContentLoaded', function(){
+            const submit = document.querySelector(  '${DOM_IDS['second_page']['submit']}');
+            submit.click();
+        });
+        `
+    });
 };
 
 const lastPage = async ( page ) => {
-    await page.goto ( page.url() );
-    await page.click( DOM_IDS['last_page']['submit']);
+    await page.addScriptTag({
+        content: `
+        document.addEventListener('DOMContentLoaded', function(){
+            const submit = document.querySelector( '${DOM_IDS['last_page']['submit']}' );
+            submit.click();
+        });
+        `
+    });
 };
 
 const getestedFileKeys = ( file , keys ) => {
@@ -218,22 +206,19 @@ const notEmptyFile = file => {
     if ( 
         file['Job-Titel / Position'.toLowerCase()] == '' ||
         file['Beschreibung'.toLowerCase()] == ''   
-        ) return false;
+    ) return false;
 
     return true;
 };
 
 const fillTheForm = async ( exelFileData, page, url ) => {
-
     exelFileData = exelFileData.filter( notEmptyFile );
-
     for ( let index = 0; index < exelFileData.length ; index++){
         const file = exelFileData[index];
         await page.goto( url );
-
         await firstPage( file, page );
-        // await secondPage( file, page );
-        // await lastPage( page );
+        await secondPage( page );
+        await lastPage( page );
     }
 };
 
