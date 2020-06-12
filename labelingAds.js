@@ -132,7 +132,6 @@ var _ = (function(){
 						key = obj[ keyName ];
 					}
 
-					// init
 					res[ key ] = ( res[ key ] || [] );
 					if( typeof keyName != 'function' ){
 						delete obj[ keyName ];

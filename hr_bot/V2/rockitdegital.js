@@ -123,11 +123,11 @@ const firstPage = async ( file, page ) => {
         content: `
             const frame = document.querySelector( '#description_ifr' );
             frame.id = 'description';
-            `
+        `
     });
-    await page.type( DOM_IDS['first_page']['Job-Titel / Position'], file['Job-Titel / Position'.toLowerCase()]);
+    await page.type ( DOM_IDS['first_page']['Job-Titel / Position'], file['Job-Titel / Position'.toLowerCase()]);
     await page.type ( DOM_IDS['first_page']['Beschreibung'], file[ 'Beschreibung'.toLowerCase() ]);
-    await page.type( DOM_IDS['first_page']['Anstellung'], file[ 'Anstellung'.toLowerCase() ]);
+    await page.type ( DOM_IDS['first_page']['Anstellung'], file[ 'Anstellung'.toLowerCase() ]);
     await page.type ( DOM_IDS['first_page']['Vertrag'], file[ 'Vertrag'.toLowerCase() ]);
     
     const kategories = file['Kategorie(n) *(maximal 2)'.toLowerCase()].split(',').map( cat => cat.trim() );
@@ -151,18 +151,20 @@ const firstPage = async ( file, page ) => {
     await page.type ( DOM_IDS['first_page']['Ort'], plzOrt[1] );
     await page.type ( DOM_IDS['first_page']['Webseite'], file[ 'Webseite'.toLowerCase() ]);
     await page.type ( DOM_IDS['first_page']['Video Link'], file['Video Link'.toLowerCase() ]);
-    await page.click( DOM_IDS['first_page']['kivaplus']);
+    await page.click( DOM_IDS['first_page']['kivaplus'] );
     await page.click( DOM_IDS['first_page']['submit'] );
-
 };
 
 const secondPage = async ( page ) => {
     await page.addScriptTag({
         content: `
-        document.addEventListener('DOMContentLoaded', function(){
-            const submit = document.querySelector(  '${DOM_IDS['second_page']['submit']}');
-            submit.click();
-        });
+            document.addEventListener('DOMContentLoaded', function(){
+                const submit = document.querySelector( '${DOM_IDS['second_page']['submit']}' );
+                submit.click();
+                document.addEventListener('DOMContentLoaded', function(){
+                    console.log( window.location.href );
+                });
+            });
         `
     });
 };
@@ -170,10 +172,9 @@ const secondPage = async ( page ) => {
 const lastPage = async ( page ) => {
     await page.addScriptTag({
         content: `
-        document.addEventListener('DOMContentLoaded', function(){
-            const submit = document.querySelector( '${DOM_IDS['last_page']['submit']}' );
-            submit.click();
-        });
+            document.addEventListener('DOMContentLoaded', function(){
+                console.log( window.location.href );
+            });
         `
     });
 };
@@ -192,8 +193,8 @@ const validateExcelFile = ( file, alert ) => {
     domKeys = getestedFileKeys( DOM_IDS, [] ).map( f => f.toLowerCase() );
     fileKeys = Object.keys( file[0] );
 
-    for (let index = 0; index < fileKeys.length; index++) {
-        const file = fileKeys[index];
+    for( let index = 0; index < fileKeys.length; index++ ) {
+        const file = fileKeys[ index ];
         if ( !domKeys.includes( file.trim() ) ){
             alert( 'something is wrong with ExcelFile data, Not matching to the webiste. Please check it again' );
             return false;
@@ -203,7 +204,7 @@ const validateExcelFile = ( file, alert ) => {
 };
 
 const notEmptyFile = file => {
-    if ( 
+    if (
         file['Job-Titel / Position'.toLowerCase()] == '' ||
         file['Beschreibung'.toLowerCase()] == ''   
     ) return false;
@@ -214,7 +215,7 @@ const notEmptyFile = file => {
 const fillTheForm = async ( exelFileData, page, url ) => {
     exelFileData = exelFileData.filter( notEmptyFile );
     for ( let index = 0; index < exelFileData.length ; index++){
-        const file = exelFileData[index];
+        const file = exelFileData[ index ];
         await page.goto( url );
         await firstPage( file, page );
         await secondPage( page );
