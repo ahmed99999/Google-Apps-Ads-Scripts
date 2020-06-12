@@ -1,0 +1,107 @@
+<head>
+<title>Formatter</title>
+<meta charset="UTF-8"/>
+<style>
+button{
+	width:100%;
+	height:50px;
+	font-size:30px;
+}
+textarea{
+	min-width : 400px;
+	min-height : 400px;
+	width: 100%;
+}
+div{
+	border-width: 1px;
+	border-color: red;
+	order-style: solid;
+	display: inline-block;
+	min-width: 49.8%;
+}
+</style>
+</head>
+<body>
+<button onClick="clear1();">Clear</button>
+<!--
+<div style="display: block;">
+	<h2><label for="minSimilarity">Some setting</label></h2>
+	<input id="minSimilarity" value="77" style="width:30px;" />%
+</div>
+-->
+<div>
+	<h2><label for="ta1">Source Code</label></h2>
+	<textarea id="ta1"></textarea>
+</div>
+<div>
+	<h2><label for="ta2">Formatted Source Code</label></h2>
+	<textarea id="ta2"></textarea>
+</div>
+<div style="display: block;">
+	<button onClick="start();">Execute</button>
+</div>
+
+
+</body>
+<script>
+
+function clear1(){
+	document.querySelector( '#ta1' ).value = '';
+	document.querySelector( '#ta2' ).value = '';
+}
+
+Number.prototype.times = function( callback ){
+	for( var i = 1; i <= Number( this.valueOf() ); i++ ){
+		callback( i );
+	};
+}
+
+function property( prop ){
+	return function( item ){
+		if( typeof item[ prop ] == 'function' ){
+			return item[ prop ]();
+		}
+		return item[ prop ];
+	};
+}
+
+function onlyUnique( value, index, self ){
+    return self.indexOf( value ) === index;
+}
+
+function flatten( acc, val ){
+	return acc.concat( val );
+}
+
+function start(){
+	var l = new Date().getTime();
+	
+	var source = document.querySelector( '#ta1' ).value;
+	
+	source = source
+		// remove outer spaces
+		.replace( /([\w\)\]\}]) \{/g, ( fullMatch, firstGroup ) => firstGroup + '{' )
+		.replace( /([\w\)\]\}]) \[/g, ( fullMatch, firstGroup ) => firstGroup + '[' )
+		.replace( /([\w\)\]\}]) \(/g, ( fullMatch, firstGroup ) => firstGroup + '(' )
+		
+		// add inner spaces
+		.replace( /\(([^\s^\)])/g, ( fullMatch, firstGroup ) => '( ' + firstGroup )
+		.replace( /([^\s^\(])\)/g, ( fullMatch, firstGroup ) => firstGroup + ' )' )
+		
+		.replace( /\[([^\s^\]])/g, ( fullMatch, firstGroup ) => '[ ' + firstGroup )
+		.replace( /([^\s^\[])\]/g, ( fullMatch, firstGroup ) => firstGroup + ' ]' )
+		
+		.replace( /\{([^\s^\}])/g, ( fullMatch, firstGroup ) => '{ ' + firstGroup )
+		.replace( /([^\s^\{])\}/g, ( fullMatch, firstGroup ) => firstGroup + ' }' )
+		
+		.replace( / */, ' ' )
+		
+	;
+	
+	document.querySelector( '#ta2' ).value = source;
+	
+	l = Math.floor( ( new Date().getTime() - l ) / 1000 );
+	console.log( 'duration: ' + l + ' seconds' );
+}
+start();
+</script>

@@ -1,0 +1,22 @@
+
+
+ga:sessions
+ga:user
+ga:bounceRate
+ga:avgSessionDuration
+ga:pageviewsPerSession
+ga:percentNewSessions
+
+
+segment=sessions::condition::ga:medium%3D%3Dorganic
+
+
+
+- A&O MCC in die Bigquery - beantragen
+- Kategorien
+
+- top10 cities
+
+Filter
+	Stadt
+	Kategorie

@@ -1,0 +1,196 @@
+<head>
+	<title>Campaign Generator</title>
+	<meta charset="UTF-8"/>
+	<style>
+		textarea{
+			width: 90%;
+			height: 300px;
+		}
+		input{
+			width: 300px;
+		}
+		button{
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+
+<div id="input"></div>
+
+<textarea id="output"></textarea>
+
+</body>
+<script>
+
+var campaignNameIndex = 0;
+var priorityIndex = 23;
+
+function createTable(){
+
+	var attributes = 'Campaign	Labels	Budget	Budget type	Campaign Type	Networks	Languages	Bid Strategy Type	Bid Strategy Name	Enhanced CPC	Start Date	End Date	Ad Schedule	Ad rotation	Delivery method	Targeting method	Exclusion method	DSA Website	DSA Language	DSA targeting source	DSA page feeds	Merchant Identifier	Country of Sale	Campaign Priority	Local Inventory Ads	Inventory filter	Flexible Reach	Ad Group	Max CPC	Max CPM	Target CPA	Max CPV	Target CPM	Target ROAS	Desktop Bid Modifier	Mobile Bid Modifier	Tablet Bid Modifier	TV Screen Bid Modifier	Top Content Bid Modifier	Display Network Custom Bid Type	Targeting optimization	Ad Group Type	Tracking template	Final URL suffix	Custom parameters	ID	Location	Reach	Feed	Radius	Unit	Bid Modifier	Campaign Status	Ad Group Status	Status	Comment'.split( '\t' );
+
+	var campaignValues = 'Suspended	managed_by_script;suspended	1.00	Daily	Shopping	Google search;Search Partners;Display Network	All	Manual CPC		Enabled	[]	[]	[]	Optimize for clicks	Standard	Location of presence or Area of interest	Location of presence or Area of interest			Google		8308173	DE	High	Disabled	*	Audiences																										Paused			'.split( '\t' );
+	var adGroupValues  = 'Suspended																										Audiences	Ad group	0.01											None	Disabled	Default											Paused	Enabled		'.split( '\t' );
+	var countryValues = 'Suspended																																													2276	Germany	62700000					Paused		Enabled	'.split( '\t' );
+
+	//alert( attributes.length + ' - ' + values.length );
+
+	var t = document.createElement( 'table' );
+	t.id = 'myTable';
+	
+	var h = document.createElement( 'thead' );
+	var tr = document.createElement( 'tr' );
+	t.appendChild( h );
+	h.appendChild( tr );
+
+	var th;
+
+	th = document.createElement( 'th' );
+	th.appendChild( document.createTextNode( 'Attribute' ) );
+	tr.appendChild( th );
+
+	th = document.createElement( 'th' );
+	th.appendChild( document.createTextNode( 'Campaign' ) );
+	tr.appendChild( th );
+
+	th = document.createElement( 'th' );
+	th.appendChild( document.createTextNode( 'Ad Group' ) );
+	tr.appendChild( th );
+
+	th = document.createElement( 'th' );
+	th.appendChild( document.createTextNode( 'Country' ) );
+	tr.appendChild( th );
+
+
+	var b = document.createElement( 'tbody' );
+	t.appendChild( b );
+
+	attributes.map( ( attr, index ) => {
+		var tr = document.createElement( 'tr' );
+		b.appendChild( tr );
+		var td = document.createElement( 'td' );
+		tr.appendChild( td );
+		td.appendChild( document.createTextNode( attr ) );
+		
+		var td = document.createElement( 'td' );
+		tr.appendChild( td );
+		var inp = document.createElement( 'input' );
+		td.appendChild( inp );
+		inp.value = campaignValues[ index ];
+		
+		var td = document.createElement( 'td' );
+		tr.appendChild( td );
+		var inp = document.createElement( 'input' );
+		td.appendChild( inp );
+		inp.value = adGroupValues[ index ];
+		
+		var td = document.createElement( 'td' );
+		tr.appendChild( td );
+		var inp = document.createElement( 'input' );
+		td.appendChild( inp );
+		inp.value = countryValues[ index ];
+	});
+
+	var tr = document.createElement( 'tr' );
+	b.appendChild( tr );
+	
+	var td = document.createElement( 'td' );
+	tr.appendChild( td );
+	td.appendChild( document.createTextNode( 'Generate' ) );
+	
+	var td = document.createElement( 'td' );
+	tr.appendChild( td );
+	var inp = document.createElement( 'input' );
+	td.appendChild( inp );
+	inp.id = 'generateNumber';
+	inp.value = 50;
+
+	var td = document.createElement( 'td' );
+	tr.appendChild( td );
+	td.appendChild( document.createTextNode( 'Campaign Tripples' ) );
+	
+	
+	var td = document.createElement( 'td' );
+	tr.appendChild( td );
+	var but = document.createElement( 'button' );
+	td.appendChild( but );
+	but.onclick = doIt;
+	but.appendChild( document.createTextNode( 'Do it!' ) );
+
+	document.getElementById( 'input' ).appendChild( t );
+
+	var trs = [].slice.call( document.getElementsByTagName( 'tr' ) );
+	[ campaignNameIndex, priorityIndex ].forEach( index => {
+		[].slice.call(
+			trs[ index + 1 ].getElementsByTagName( 'input' )
+		).forEach( input => input.disabled = true )
+	});
+
+}
+
+function doIt(){
+	var t = document.getElementById( 'myTable' );
+	
+	var rows = [].slice.call( t.querySelectorAll( 'tr' ) )
+		.map( tr => {
+			var cells = [].slice.call( tr.querySelectorAll( 'td' ) )
+				.map( td => {
+					var input = td.querySelector( 'input' );
+					if( input ){
+						return input.value;
+					}
+					return td.innerText;
+				})
+			;
+			return cells;
+		})
+		.filter( row => row.length == 4 )
+	;
+	
+	// remove the last row which is has the DoIt! button
+	rows = rows.slice( 0, rows.length - 1 );
+	
+	var transposed = rows[ 0 ].map( ( col, i ) => rows.map( row => row[ i ] ) );
+	
+	var headers = transposed.shift();
+	
+	// console.log( headers );
+	// console.log( transposed );
+	
+	var rows = [ headers.join( '\t' ) ];
+	
+	var prios = [ 'Low', 'Medium', 'High' ];
+	var separator = '_';
+	
+	var campaignIndex = 0;
+	var adGroupIndex = 1;
+	var countryIndex = 2;
+	
+	var campaignPrefix = transposed[ campaignIndex ][ campaignNameIndex ];
+	
+	var count = document.getElementById( 'generateNumber' ).value;
+	
+	for( var i = 0; i < count; i++ ){
+		for( var p = 0; p < prios.length; p++ ){
+			var prio = prios[ p ];
+			transposed[ campaignIndex ][ campaignNameIndex ] = campaignPrefix + separator + i + separator + prio;
+			transposed[ adGroupIndex ][ campaignNameIndex ] = campaignPrefix + separator + i + separator + prio;
+			transposed[ countryIndex ][ campaignNameIndex ] = campaignPrefix + separator + i + separator + prio;
+			
+			transposed[ campaignIndex ][ priorityIndex ] = prio;
+			
+			rows.push( transposed.map( row => row.join( '\t' ) ).join( '\n' ) );
+		}
+	}
+	document.getElementById( 'output' ).value = rows.join( '\n' );
+}
+
+
+
+
+
+
+createTable();
+
+</script>

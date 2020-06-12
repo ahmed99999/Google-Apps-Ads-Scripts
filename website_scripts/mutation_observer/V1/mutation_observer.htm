@@ -1,0 +1,203 @@
+<meta charset='UTF-8'>
+<title>Mutation Observer Demo</title>
+<body>
+
+<p id="p1" class="test1" role="bla">test</p>
+<p id="p2" class="test1" role="bla">test</p>
+
+
+</body>
+<script>
+
+function startEventGenerator(){
+	var toggle = true;
+	var targetId = 'p2';
+	
+	function eventGenerator(){
+		if( toggle ){
+			//console.log( 'foo' );
+			var div1 = document.createElement( 'div' );
+			div1.id = 'div1';
+			div1.style.width = '100px';
+			div1.style.heigth = '100px';
+			div1.style.backgroundColor = 'blue';
+			div1.innerHTML = 'x';
+			
+			var div2 = document.createElement( 'div' );
+			div2.id = 'div2';
+			div2.style.width = '100px';
+			div2.style.heigth = '100px';
+			div2.style.backgroundColor = 'green';
+			div2.innerHTML = 'x';
+			div1.appendChild( div2 );
+			
+			document.getElementById( targetId ).setAttribute( 'role', 'true' );
+			//document.getElementById( 'p1' ).role = 'test1';
+			
+			//document.querySelector( 'body' ).appendChild( div1 );
+			
+		}else{
+			//var x = document.getElementsByTagName( 'div' )[ 0 ];
+			//console.log( 'bar' );
+			//document.getElementById( 'p1' ).role = 'test2';
+			document.getElementById( targetId ).setAttribute( 'role', 'false' );
+			
+			//document.querySelector( 'body' ).removeChild( x );
+		}
+		toggle = !toggle;
+	}
+	eventGenerator();
+	setInterval( eventGenerator, 1000 );
+}
+startEventGenerator();
+
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+
+
+var eventDefinitions = {
+	addedNodes : [
+		{
+			id : 'div1',
+			eventName : 'div1_added',
+		},
+		{
+			css : 'body>div>div',
+			eventName : 'div2_added',
+		},
+	],
+	removedNodes : [
+		{
+			id : 'div1',
+			eventName : 'div1_removed',
+		},
+	],
+	changedNodes : [
+		{
+			css : 'p',
+			attributeName : 'role',
+			attributeValue : 'democlass2',
+			eventName : 'p_changed',
+		},
+	],
+};
+
+
+var eventDefinitions = {
+	changedNodes: [
+		{
+			css: 'p',
+			eventName: 'event_registered',
+			attributeName : 'role',
+			attributeValue : 'true',
+	   },
+	],
+};
+
+var dataLayer = dataLayer || [];
+
+function fireEvent( eventName ){
+    console.log( 'fire event: ' + eventName );
+    dataLayer.push( { event : eventName } );
+    
+}
+
+function collectDOMNodes( domNodes ){
+    function collectDOMNodes2( node, collection ){
+        collection.push( node );
+        [].slice.call( node.childNodes )
+            .forEach( function( node ){
+                if( node.nodeType != Node.TEXT_NODE ){
+                    collectDOMNodes2( node, collection );
+                }
+        });
+    }
+    var allDOMNodes = [];
+    [].slice.call( domNodes ).forEach( function( x ){ collectDOMNodes2( x, allDOMNodes ) } );
+    return allDOMNodes;
+}
+
+// Callback function to execute when mutations are observed
+var callback = function( mutations, observer ){
+    mutations.forEach( function( mutation ){
+		
+        if( mutation.type === 'childList' ){
+            [ 'addedNodes', 'removedNodes' ]
+                .filter( function( x ){ return eventDefinitions[ x ] } )
+                .forEach( function( operation ){
+                    var items = collectDOMNodes( mutation[ operation ] );
+                    var ids = items.map( function( x ){ return x.id } );
+					
+					/*console.log( '--' + mutation.type + ' > ' + items.length + ' > ' + JSON.stringify( ids, null, 2 ) + ' > ' 
+						+ mutation.addedNodes[ 0 ]
+					);
+					*/
+                    
+                    eventDefinitions[ operation ]
+                        .filter( function( x ){
+                            if( x.id ){
+                                return ids.indexOf( x.id ) >= 0;
+                            }
+                            if( x.css ){
+                                return items.indexOf( document.querySelector( x.css ) ) >= 0;
+                            }
+							if( x.isTextNode ){
+								return items.filter( item => item.nodeType == 3 ).length >= 0;
+							}
+                            throw new Error( 'no selector specified: ' + JSON.stringify( x ) );
+                        })
+                        .map( function( x ){ return x.eventName } )
+                        .forEach( function( eventName ){
+                            fireEvent( eventName );
+                        });
+                    ;
+            });
+        }
+        /*
+        if( false ){
+            for( key in mutation ){
+                console.log( key + ': ' + mutation[ key ] );
+            }
+        }
+        */
+        if( mutation.type === 'attributes' && eventDefinitions[ 'changedNodes' ] ){
+            //console.log( mutation.target.getAttribute( mutation.attributeName == 'class' ? 'className' : mutation.attributeName ) )
+            var eventDef = eventDefinitions[ 'changedNodes' ].filter( function( x ){
+                return ( x.id ? x.id === mutation.target.id : [].slice.call( document.querySelectorAll( x.css ) ).indexOf( mutation.target ) >= 0 )
+                    && ( !x.attributeName ||
+                        (     x.attributeName == mutation.attributeName
+                            && (
+                                !x.attributeValue ||
+                                x.attributeValue == mutation.target.getAttribute( mutation.attributeName == 'class' ? 'className' : mutation.attributeName )
+                            )
+                        )
+                    )
+                ;
+            });
+            
+            if( eventDef.length > 0 ){
+                fireEvent( eventDef[ 0 ].eventName );
+            }
+            //
+        }
+        //observer.disconnect();
+    });
+};
+
+// Create an observer instance linked to the callback function
+var observer = new MutationObserver( callback );
+
+// Select the node that will be observed for mutations
+var targetNode = document.querySelector( 'body' );
+
+// Options for the observer (which mutations to observe)
+var config = { attributes: true, childList: true, subtree: true };
+
+// Start observing the target node for configured mutations
+observer.observe( targetNode, config );
+
+ 
+
+
+</script>

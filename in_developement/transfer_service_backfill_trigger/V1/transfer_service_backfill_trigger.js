@@ -1,0 +1,103 @@
+var config = {
+	"DESCRIPTION" : "this script is used to take data from Deep Crawl anb put into BigQuery" ,
+	"INSTRUCTIONS": "",
+	"VERSION" : 1,
+	"VERSION_TAG" : "stable",
+	"settings" : {}
+};
+
+var SCRIPT_NAME = 'Transfer-Service-Trigger';
+var MUTE_HTTP_EXCEPTIONS = true;
+var API_ENDPOINT = 'https://bigquerydatatransfer.googleapis.com/v1/';
+var TRANSFER_ID = '5b101670-0000-2479-a290-f403043bfb5c';
+var COUNT_DAYS = 1; // 0 = today only, 1 = yesterday + today, ...
+
+function main() {
+  try{
+    var COUNT_DAYS = 1;
+    var d = new Date();
+    var d2 = new Date( d.getTime() - 1000 * 60 * 60 * 24 * COUNT_DAYS );
+	var today = d.getYear() + '-' + ( d.getMonth() + 1 ) + '-' + d.getDate();
+	var daysAgo = d2.getYear() + '-' + ( d2.getMonth() + 1 ) + '-' + d2.getDate();
+    Logger.log( 'today: ' + today );
+	Logger.log( 'daysAgo' + COUNT_DAYS + ': ' + daysAgo );
+	
+    var startTime = daysAgo + 'T00:00:00+00:00';
+    var endTime = today + 'T00:00:00+00:00';
+    Logger.log( 'startTime: ' + startTime );
+    Logger.log( 'endTime: ' + endTime );
+
+    //var listConfigUrl = API_ENDPOINT + 'projects/biddy-io/transferConfigs';
+    //var result = doRequest( listConfigUrl );
+    //return;
+    
+    var scheduleBackfillUrl = API_ENDPOINT
+		+ 'projects/biddy-io/locations/us/transferConfigs/'
+		+ TRANSFER_ID
+		+ ':scheduleRuns'
+	;
+    
+    Logger.log( 'url to be requested: ' + scheduleBackfillUrl );
+    var result = doRequest(
+      scheduleBackfillUrl,
+      'post', // http-method
+      {
+        startTime : startTime,
+        endTime   : endTime,
+      }
+    );
+    
+    Logger.log( 'result: ' + JSON.stringify( result, null, 2 ) );
+  }catch ( error ){
+    Logger.log( 'Error in ' + SCRIPT_NAME + ' ' + ' -> ' + error + '\n' + error.stack );
+    throw error;
+  }
+}
+
+
+function doRequest( apiURL, httpMethod, payload ){
+  Logger.log( 'getService' );
+  var service = getService();
+  if( service.hasAccess() ){
+    Logger.log( 'hasAccess' );
+    
+    var options = {
+      headers		: {
+        Authorization : 'Bearer ' + service.getAccessToken(),
+      },
+      contentType	: 'application/json',
+      method		: httpMethod || 'get',
+      muteHttpExceptions	: MUTE_HTTP_EXCEPTIONS,
+    };
+    if( httpMethod == 'post' ){
+      options.payload = JSON.stringify( payload ); 
+    }
+    
+    // Logger.log( 'options: ' + JSON.stringify( options, null, 2 ) );
+    
+    try {
+      Logger.log( 'url-fetch' );
+      var response = UrlFetchApp.fetch( apiURL, options );
+      //Logger.log( 'conent-text: ' + response.getContentText() );
+      
+      var result = JSON.parse( response.getContentText() );
+      
+      if( ( response.getResponseCode() >= 400 && response.getResponseCode() < 500 ) ){
+        Logger.log( 'Empty response from API. HTTP-Code: ' + response.getResponseCode() );
+        return '';
+      }
+      // log errors
+      if( result.error ){
+        Logger.log( result.error.errors[ 0 ].message );
+      }
+      return result;
+    }catch( e ){
+      Logger.log( e );
+      return '';
+    }
+  } else {
+    var authorizationUrl = service.getAuthorizationUrl();
+    Logger.log( 'Open the following URL and re-run the script: %s', authorizationUrl );
+    return '';
+  }
+}

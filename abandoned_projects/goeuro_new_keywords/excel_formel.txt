@@ -1,0 +1,77 @@
+if(
+	isnumber(
+		search( "generic", A20 ) // if Generic
+	),
+	"lps.h.sem." & LOWER(
+		SUBSTITUTE(
+			(
+				IF(
+					ISNUMBER(
+						SEARCH( "_rou]", B20 ) // Kampagne ist vom Typ "Rout"
+					)
+					,
+					MID(
+						B20,
+						FIND( "|", B20 ) + 1,
+						FIND( ".", B20 ) - FIND( "|", B20 ) - 1
+					),
+					""
+				)
+				&MID(
+					C20,
+					FIND(
+						CHAR( 44 ),
+						SUBSTITUTE( C20, "|", CHAR(44), 1 )
+					),
+					1 +
+					FIND(
+						CHAR( 44 ),
+						SUBSTITUTE( C20, "|", CHAR( 44 ), 2 )
+					) - 
+					FIND(
+						CHAR( 44 ),
+						SUBSTITUTE( C20, "|", CHAR( 44 ), 1 )
+					)
+				)
+			),
+			"|",
+			"."
+		)
+	),
+	"lps.h.sem."
+	&LOWER(
+		SUBSTITUTE(
+			(
+				IF(
+					ISNUMBER(
+						SEARCH( "_rou]", B20 )
+					),
+					MID(
+						B20,
+						FIND( "|", B20 ) + 1,
+						FIND( ".", B20 ) - FIND( "|", B20 ) - 1
+					),
+					""
+				)
+				&MID(
+					C20,
+					FIND(
+						CHAR( 44 ),
+						SUBSTITUTE( C20, "|", CHAR( 44 ), 1 )
+					),
+					1 +
+					FIND(
+						CHAR( 44 ),
+						SUBSTITUTE( C20, "|", CHAR( 44 ), 3 )
+					) -
+					FIND(
+						CHAR( 44 ),
+						SUBSTITUTE( C20, "|", CHAR( 44 ), 1 )
+					)
+				)
+			),
+			"|",
+			"."
+		)
+	)
+)

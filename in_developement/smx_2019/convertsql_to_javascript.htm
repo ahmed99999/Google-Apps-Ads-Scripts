@@ -1,0 +1,63 @@
+<meta charset="UTF-8">
+<title>SQL_Converter</title>
+<body>
+<pre id="output" style=""></pre>
+<textarea style="visibility:hidden;width:12;height:12;">
+
+
+
+-- test
+    IFNULL( CONCAT( ',\t\n', STRING_AGG( Predicate, ',\n\t' ) ), '' ),
+
+
+</textarea>
+
+</body>
+<script>
+
+var BIGQUERY_PROJECT_ID = 'biddy-io';
+var BIGQUERY_TRANSFER_DATASET_ID = 'peak_ace_active_clients_transfer';
+var BIGQUERY_DATASET_ID = 'regression';
+var MCC_ID = 1036246249;
+var TARGET_ACCOUNT_ID = 7056468392;
+var VIEW_PREFIX = '2';
+
+
+var ta = document.querySelector('textarea');
+//var queries = ta.value.split( '\n\n' ).map( a => a.trim() ).filter( a => a.length > 0 );
+var queries = [ ta.value.trim() ];
+
+var res = '';
+
+queries.forEach( query => {
+	var split = query.split('\n');
+
+	var first = '';
+	if( split[ 0 ].substring( 0, 2 ) == '--' ){
+		first = '\n\tvar ' + split[ 0 ].substring( 3 ).toUpperCase().replace( / /g, '_' ) + ' = [\n';
+		split.shift();
+	}
+
+	res += first + split
+		.map( row => row.replace( /\\/g, '\\\\' ) )
+		.map( row => row.replace( /'/g, '\\\'' ) )
+		.map( row => row.replace( new RegExp( '`' + BIGQUERY_PROJECT_ID + '.' + BIGQUERY_TRANSFER_DATASET_ID + '.', 'g'),
+			'`\' + PROJECT_ID + \'\.\' + TRANSFER_SERVICE_DATASET_ID + \'\.' )
+		)
+		.map( row => row.replace( new RegExp( '`' + BIGQUERY_PROJECT_ID + '.' + BIGQUERY_DATASET_ID + '.', 'g'),
+			'`\' + PROJECT_ID + \'\.\' + DATASET_ID + \'\.' )
+		)
+		.map( row => row.replace( new RegExp( MCC_ID + '`', 'g' ), '\' + TRANSFER_SERVICE_ACCOUNT_ID + \'`' ) )
+		.map( row => row.replace( new RegExp( TARGET_ACCOUNT_ID + '', 'g' ), '\' + ACCOUNT_ID + \'' ) )
+		.map( row => '\t\t\'' + row + '\',' )
+		.map( row => row.replace( new RegExp( '\\.' + VIEW_PREFIX ), '.\' + VIEW_PREFIX + \'' ) )
+		.join('\n')
+		+ '\n\t].join( \'\\n\' ),'
+	;
+});
+document.getElementById( 'output' ).innerHTML = res;
+
+//ta.focus();
+//setTimeout( 'ta.select();', 200 );
+
+</script>

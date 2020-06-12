@@ -1,0 +1,12 @@
+
+
+
+ 
+ALL
+- Sourcecode in folder legen
+- bilder in folder legen
+
+
+Tip2
+- url für airtables einbauen (bluren)
+

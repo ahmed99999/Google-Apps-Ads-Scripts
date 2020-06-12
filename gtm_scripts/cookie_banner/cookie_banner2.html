@@ -1,0 +1,211 @@
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <style>
+            body {
+                font-family: 'Roboto','Helvetica Neue','Helvetica', 'Arial', sans-serif;
+            }
+            h2 {
+                font-size: 32px;
+                line-height: 36px;
+                font-weight: 700;
+                color: #05164D;
+            }
+            p {
+                margin: 0px;
+                font-weight: 300;
+                font-size: 14px;
+                line-height: 18px;
+                color: #05164D;
+            }
+            .checkbox-container {
+            }
+            .checkbox {
+                cursor: pointer;
+                margin-left:45px;
+                margin-right:45px;
+                display: inline-block;
+            }
+            .checkbox label {
+                font-weight: 400;
+                font-size: 18px;
+                line-height: 20px;
+                padding-left: 5px;
+                margin-left: 5px;
+                cursor: pointer;
+                color: #05164D;
+            }
+            .checkbox input {
+                margin-left: 5px;
+                position: absolute;
+                transform: scale(1.5);
+                top: 0;
+                left: 0;
+                height: 16px;
+                content:"";
+                width: 16px;
+                cursor: pointer;
+                color: #05164D;
+                background-color: #05164D;
+                border-radius: 4px;
+                border: 2px solid #05164D;
+            }
+         
+            .buttons-container {
+                text-align:right;
+                margin-top: 30px;
+            }
+            .button-secondary {
+                cursor: pointer;
+                text-align: center;
+                border-radius: 4px;
+                background-color: #fff;
+                border: 2px solid #05164D;
+                color: #05164D;
+                height: 50px;
+                min-height: 50px;
+                line-height: 24px;
+                padding: 11px 30px;
+                font-size: 18px;
+                font-weight: 700;
+                margin-right: 30px;
+                transition: 200ms ease all;
+            }
+            .button-primary {
+                cursor: pointer;
+                text-align: center;
+                border-radius: 4px;
+                background-color: #ffad00;
+                border: 1px solid #ffad00;
+                color: #05164D;
+                height: 50px;
+                min-height: 50px;
+                line-height: 24px;
+                padding: 11px 30px;
+                font-size: 18px;
+                font-weight: 700;
+                transition: 200ms ease all;
+            }
+            .modal1{
+                background-color: white;
+                /* border-style: solid;
+                border-width: 1px;
+                border-color: black; */
+                position: fixed;
+                height: 300px;
+                padding: 20px;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                z-index: 999999;
+                max-width: 800px;
+                margin: auto;
+                overflow: hidden;
+                outline: 0;
+            }
+            .consentOverlay{
+                background-color: rgb(85, 85, 85);
+                box-sizing: border-box;
+                color: rgb(0, 0, 54);
+                display: block;
+                font-size: 10px;
+                font-weight: 400;
+                height: 3558px;
+                left: 0px;
+                line-height: 10px;
+                min-height: 100%;
+                opacity: 0.8;
+                position: fixed;
+                top: 0px;
+                width: 1903px;
+                z-index: 999998;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="consentOverlay" id="overlay">
+        </div>
+        <div class="modal1" id="banner">
+            <h2>
+                Cookie-Einstellungen
+            </h2>
+            <p>
+                Cookie-EinstellungenLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+            <div class="checkbox-container">
+                <div class="checkbox">
+                    <input type="checkbox">
+                    <label for="">Notwendig</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox">
+                    <label for="">Statistik</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox">
+                    <label for="">Komfort</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox">
+                    <label for="">Personalisierung</label>
+                </div>
+            </div>
+
+            <div class="buttons-container">
+                <button class="button-secondary">Auswahl bestätigen</button>
+                <button class="button-primary">Alle auswählen</button>
+            </div>
+        </div>
+
+        <script>
+            function docReady( fn ){
+                // see if DOM is already available
+                if( document.readyState === 'complete' || document.readyState === 'interactive' ){
+                    // call on next available tick
+                    setTimeout( fn, 1 );
+                } else {
+                    document.addEventListener( 'DOMContentLoaded', fn );
+                }
+            }
+
+            function toggle ( checkbox ){
+                if ( checkbox.checked == true ){
+                    checkbox.checked = false;
+                    return;
+                }
+                checkbox.checked = true;
+            }
+
+            function checkboxContainerOnClick( checkboxContainer ) {
+                checkboxContainer.addEventListener( 'click', function( evt ){
+                    var checkbox = checkboxContainer.querySelector('input[type=checkbox]');
+                    toggle( checkbox );
+                });
+            }
+
+            docReady( function(){
+                var banner = document.getElementById( 'overlay' );
+                document.body.insertBefore(
+                    overlay,
+                    document.body.firstChild
+                );        
+                var banner = document.getElementById( 'banner' );
+                document.body.insertBefore(
+                    banner,
+                    document.body.firstChild
+                );
+                var checkboxContainers = banner.querySelectorAll('.checkbox');
+                var checkboxs = banner.querySelectorAll('.checkbox > input[type=checkbox]');
+                checkboxContainers.forEach( checkboxContainerOnClick );
+                checkboxs.forEach( function( checkbox ){ checkbox.addEventListener( 'click', function( evt ){ toggle( checkbox ); }) });
+ 
+                console.log( 'data : ', checkboxContainers );
+            });
+        </script>
+    </body>
+</html>

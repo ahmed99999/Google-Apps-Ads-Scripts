@@ -1,0 +1,46 @@
+
+Datastudio
+	- Filter
+		- Campaign ✓
+		- AdGroup ✓
+		- Label
+	- Matchtypeshare over time (exact steigt?) ✓
+	- Matchtype-Revenue over time ✓
+	- Ngrame
+		- Clicks
+		-...
+	- Kampagnen gruppieren nmit Labels?
+	- Bouncerate reduziert Profit/Click	
+	- Aufsteiger/Absteiger Ngrame / Searchqueries
+	- LSV-Keywords
+	- Exact vs. Broad ✓
+	- keyword das springt // ist das nicht Duplicate Queries? ✓
+		- sq schlägt mal hier mal da an ✓
+	- common pitfalls
+	- sq, die negative bestandteile enthalten
+	- sq mit hoher bouncerate ✓
+	- sq mit absprungrate ✓
+	- zeitverlauf ?
+
+
+total unique query growth ✓
+ 
+Duplicate Queries ( same query is showing from multiple ad groups ) ✓
+	
+
+
+Regression - weitere Faktoren
+	- Qualitätsfaktor ✓
+	- Länge der Query ✓
+	------------------------------
+	- CTR
+	- Label
+	- Impression-Shares
+	- Device -> reduziert daten
+	- Matchtypeshare?
+	- Brand
+	- sql -> kampagnen mit label Brand oder im Namen enthalten -> Keywords -> matchen mit queries
+	- bei unseren kunden testen
+	
+- Slides zu Knime
+	- was ist Knime

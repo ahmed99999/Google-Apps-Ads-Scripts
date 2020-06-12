@@ -1,0 +1,114 @@
+Absolute top impression share
+	= absolute top impressions / total eligible top impressions
+
+
+
+
+
+1 Impression
+AvgPos = 1
+	- in 22% der Fälle sind beide Percentage-Werte = 0
+	- sonst beide Percentage-Werte = 1
+
+1 Impression, Abs.TopImpPercentage = 1
+	- AvgPos = 1
+
+1 Impression, TopImpPercentage = 1, Abs.TopImpPercentage = 0
+	- 2 <= AvgPos <= 8
+
+1 Impression, TopImpPercentage = 0, Abs.TopImpPercentage = 0
+	- 1 <= AvgPos <= 45
+	- wahrscheinlich wird die eine Impression hier gar nicht gezählt.
+		Deswegen ist es möglich, dass AvgPos = 1
+	
+
+SearchImpressionShare bezieht sich auf alle Impressions 
+	(nich nur die, die für SearchAbs.TopIS herangezogen werden)
+
+
+Percentage-Werte beziehen sich auf die Impressions
+	- Wenn Impressions = 1 dann Percentage-Werte in ( 0, 1 )
+	- Wenn Impressions = 2 dann Percentage-Werte in ( 0, 0.5, 1 )
+	- Wenn Impressions = 3 dann Percentage-Werte in ( 0, 33, 67, 1 )
+		- aber es gibt seltene Fälle, in denen Percentage-Werte = .5 ??????
+		-> Manchmal wird wohl eine Impression ignoriert...
+		WHERE TRUE
+			AND Impressions = 5
+			AND ABS( ROUND( TopImpressionPercentage * Impressions ) - TopImpressionPercentage * Impressions ) > .02
+			AND ABS( ROUND( AbsoluteTopImpressionPercentage * Impressions ) - AbsoluteTopImpressionPercentage * Impressions ) > .02
+
+
+AvgPos kann 0 sein (Shopping?)
+
+IS Metriken können null sein für CONTENT, Youtube, YOUTUBE_WATCH und YOUTUBE_SEARCH
+
+IS ist manchmal auch für SEARCH null
+
+
+Bis auf eine Ausnahme ( Abs.Top-IS = 1 und Top-IS = 0 ) und Rundungsfehler gilt:
+	Abs.Top-IS <= Top-IS
+
+
+
+-- create model
+CREATE OR REPLACE MODEL
+	`adwords-scripts-144712.test.model` OPTIONS ( model_type='linear_reg',
+		OPTIMIZE_STRATEGY='NORMAL_EQUATION',
+		INPUT_LABEL_COLS=['AveragePosition'] ) AS
+SELECT
+	* EXCEPT ( AdNetworkType2, Impressions ),
+	SQRT( AbsoluteTopImpressionPercentage * SearchAbsoluteTopImpressionShare ) AS abs_top_product,
+	SQRT( TopImpressionPercentage * SearchTopImpressionShare ) AS top_product,
+	TopImpressionPercentage - AbsoluteTopImpressionPercentage AS top_but_not_absolute,
+	1 - TopImpressionPercentage AS below_top
+FROM
+	`adwords-scripts-144712.test.data`
+  
+  
+
+-- create model
+CREATE OR REPLACE MODEL
+	`adwords-scripts-144712.test.k_means` OPTIONS ( model_type='KMEANS' ) AS
+SELECT
+	* EXCEPT ( AdNetworkType2, Impressions )
+FROM
+	`adwords-scripts-144712.test.data`
+
+
+
+
+-- predict
+SELECT
+	*
+FROM
+	ML.PREDICT(
+		MODEL `adwords-scripts-144712.test.model`,
+		( SELECT
+				* EXCEPT ( AdNetworkType2 ),
+				AbsoluteTopImpressionPercentage * SearchAbsoluteTopImpressionShare AS abs_top_product,
+				TopImpressionPercentage * SearchTopImpressionShare AS top_product,
+				AbsoluteTopImpressionPercentage / NULLIF( SearchAbsoluteTopImpressionShare, 0 ) AS abs_top_quotiont,
+				TopImpressionPercentage / NULLIF( SearchTopImpressionShare, 0 ) AS top_quotient
+			FROM `adwords-scripts-144712.test.data`
+		)
+	)
+
+
+
+-- weights
+SELECT
+  processed_input as Column,
+  ROUND( weight * 1000 ) / 1000 AS Weight,
+  * EXCEPT ( processed_input, weight )
+FROM
+  ML.WEIGHTS( MODEL `adwords-scripts-144712.test.model` )
+
+
+
+
+
+
+
+
+
+

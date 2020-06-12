@@ -1,0 +1,98 @@
+SELECT
+ * EXCEPT(is_typed)
+FROM
+ peak_ace_active_clients_transfer.INFORMATION_SCHEMA.TABLES
+WHERE TRUE
+  AND table_name LIKE '%triggered%'
+
+
+
+
+
+
+
+
+SELECT *
+FROM `biddy-io.peak_ace_active_clients_transfer.biddy_search_queries_triggered_by_more_than_one_keyword`
+LIMIT 1000
+
+
+
+
+SELECT
+  _DATA_DATE,
+  _LATEST_DATE
+FROM `biddy-io.peak_ace_active_clients_transfer.AdGroup_1036246249`
+WHERE TRUE
+  --AND _DATA_DATE = _LATEST_DATE
+GROUP BY
+  _DATA_DATE,
+  _LATEST_DATE
+ORDER BY
+  _DATA_DATE,
+  _LATEST_DATE
+  
+  
+  
+  
+The user has no access to library: M3FP42KoRcF-9_xxV3CJQtbK_KCzEej_I (line -1)
+
+
+
+
+
+function toList( iter ){
+  var res = [];
+  while( iter.hasNext() ){
+    res.push( iter.next() );
+  }
+  return res;
+}
+
+function main(){
+  MccApp.select( MccApp.accounts().withIds( [ 7056468392 ] ).get().next() );
+  
+  var query = 'SELECT FeedId, FeedItemId, ValidationDetails, DisapprovalShortNames FROM PLACEHOLDER_FEED_ITEM_REPORT';
+  
+  var rows = toList( AdsApp.report( query ).rows() );
+
+  Logger.log( rows.length );
+  
+  Logger.log( rows.map( function( x ){ return [ x.FeedId, x.FeedItemId, x.ValidationDetails, x.DisapprovalShortNames ].join(', ' ) } ).join( '\n' ) );
+}
+
+
+---------------
+
+
+
+- child level filter
+	- child level ( Keyword )
+	- condition
+		- attribute ( Status = ENABLED )
+	- count ( > < = )
+- parent level filter
+	- only if campaign name contains "EXACT"
+	- only if ad group name does not contain ":BRD"
+- level
+- new
+	- ( was not there yesterday )
+	- newly enabled ( was somehow paused yesterday )
+- attribute
+	- numeric ( > < = )
+	- string ( contains, regex, = )
+	- is null, is not null
+- current day of week
+- status
+	- enabled
+	- somehow paused
+
+
+
+
+
+
+
+
+
+

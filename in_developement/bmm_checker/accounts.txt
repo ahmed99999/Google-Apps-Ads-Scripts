@@ -1,0 +1,36 @@
+	9120945284, //a&o England, Canada, USA, ROW
+	7228282717, // AT - SMARTments student Ges.m.b.H -
+	1209530348, // Containerdienst
+	5355193706, // Creditsafe Germany
+	5900314261, // Creditsafe Netherlands
+	6610785691, // DOCKIN_DE
+	7288143676, // H-Hotels HotMiles
+	1954274188, // My M&M's FR
+	6920853444, // National Pen - CH
+	4053344845, // National Pen - CZ
+	2409886647, // National Pen - HU
+	1741747346, // National Pen - IT
+	4554824804, // Nets Payments DK
+	1790685445, // Creditsafe Ireland
+	3180781991, // National Pen - JP
+	5789781714, // Nets Payments NO
+	3771575526, // Creditsafe France
+	6371101030, // Creditsafe United Kingdom
+	2174357098, // National Pen - FR
+	7258229520, // Nets Payments SE
+	4436748161, // Creditsafe Belgium
+	1982248033, // Pizza Hut
+	//4753357988
+	
+
+
+// Peak Ace Active Clients MCC:	
+	var SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/19SuQtoM_t4m4F0KlsstsLpTReLHtiOvyiFxipbUovko/edit#gid=0';
+
+// Test Scripte MCC:	
+//var SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1tKMdFaam5pSz8g5rE8pj4VaZgalLTXWXFMx0z0ZC-0M/edit#gid=0';
+
+// Airbnb Demand MCC
+var SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1tWWidJhh5ZKL2jdfY11MB4cUCl1W_ynbY21eDEYxlIk/edit#gid=0';
+
+

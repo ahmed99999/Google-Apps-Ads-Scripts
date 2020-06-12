@@ -1,0 +1,2 @@
+- added all IDs
+- paused campaigns and adgroups

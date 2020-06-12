@@ -1,0 +1,267 @@
+<head>
+<title>Levenshtein</title>
+<meta charset="UTF-8"/>
+<style>
+button{
+	width:100%;
+	height:50px;
+	font-size:30px;
+}
+textarea{
+	min-width : 400px;
+	min-height : 400px;
+	width: 100%;
+}
+div{
+	border-width: 1px;
+	border-color: red;
+	order-style: solid;
+	display: inline-block;
+	min-width: 24.8%;
+}
+</style>
+</head>
+<body>
+<div style="display: block;">
+	<button onClick="clear1();">Clear</button>
+</div>
+<div style="display: block;">
+	<h2><label for="minSimilarity">Similarity Threshold</label></h2>
+	<input id="minSimilarity" value="77" style="width:30px;" />%
+</div>
+<div>
+	<h2><label for="ta1">Keywords from Account</label></h2>
+	<textarea id="ta1">
+buy shoes
+red shoes
+	</textarea>
+</div>
+<div>
+	<h2><label for="ta2">new Keywords</label></h2>
+	<textarea id="ta2">
+red shoes
+	</textarea>
+</div>
+<div>
+	<h2><label for="ta3">new Keywords similar to old ones</label></h2>
+	<textarea id="ta3" style=""></textarea>
+</div>
+<div>
+	<h2><label for="ta3">new Keywords without similar</label></h2>
+	<textarea id="ta4" style=""></textarea>
+</div>
+<div style="display: block;"><br></div>
+<div style="display: block;">
+	<button onClick="start();">Execute</button>
+</div>
+
+
+</body>
+<script>
+
+function clear1(){
+	document.querySelector( '#ta1' ).value = '';
+	document.querySelector( '#ta2' ).value = '';
+	document.querySelector( '#ta3' ).value = '';
+	document.querySelector( '#ta4' ).value = '';
+}
+
+function levenshtein( a, b ){
+	if( a.length == 0 ){ return b.length }
+	if( b.length == 0 ){ return a.length }
+	
+	var matrix = [];
+	
+	// increment along the first column of each row
+	var i;
+	for( i = 0; i <= b.length; i++ ){
+		matrix[ i ] = [ i ];
+	}
+	
+	// increment each column in the first row
+	var j;
+	for( j = 0; j <= a.length; j++ ){
+		matrix[ 0 ][ j ] = j;
+	}
+	
+	// Fill in the rest of the matrix
+	for( i = 1; i <= b.length; i++ ){
+		for( j = 1; j <= a.length; j++ ){
+			if( b.charAt( i - 1 ) == a.charAt( j - 1 ) ){
+				matrix[ i ][ j ] = matrix[ i - 1 ][ j - 1 ];
+			} else {
+				matrix[ i ][ j ] = Math.min( matrix[ i - 1 ][ j - 1 ] + 1, // substitution
+				                             matrix[ i     ][ j - 1 ] + 1, // insertion
+				                             matrix[ i - 1 ][ j     ] + 1  // deletion
+			                               );
+			}
+		}
+	}
+	return matrix[ b.length ][ a.length ];
+};
+
+Number.prototype.times = function( callback ){
+	for( var i = 1; i <= Number( this.valueOf() ); i++ ){
+		callback( i );
+	};
+}
+
+function property( prop ){
+	return function( item ){
+		if( typeof item[ prop ] == 'function' ){
+			return item[ prop ]();
+		}
+		return item[ prop ];
+	};
+}
+
+function onlyUnique( value, index, self ){
+    return self.indexOf( value ) === index;
+}
+
+function flatten( arr ){
+	if( arr.flat ){
+		return arr.flat( 1 );
+	}
+	return [].concat.apply([], arr );
+}
+
+function encodeCorpus( corpus, keywordProp ){
+	var bitsInAnInteger = 32;
+	var alphabet = 'abcdefghijklmnopqrstuvwxyz012345';
+	
+	function encode( str ){
+		var res = [];
+		str.split( '' ).forEach( function( char ){
+			var index = alphabet.indexOf( char );
+			var resIndex = Math.floor( index / bitsInAnInteger );
+			res[ resIndex ] = ( res[ resIndex ] || 0 ) | ( 1 << ( index % bitsInAnInteger ) );
+		});
+		return res;
+	}
+	corpus.forEach( function( item ){
+		item.encoded = encode( item[ keywordProp ] );
+	});
+	return corpus;
+}
+
+function bitCount( n ){
+	n = n - ( ( n >> 1 ) & ( 0x55555555 ) );
+	n = ( n & 0x33333333 ) + ( ( n >> 2 ) & 0x33333333 );
+	return ( ( n + ( n >> 4 ) & 0xF0F0F0F ) * 0x1010101 ) >> 24;
+}
+
+function dist( item1, item2, keywordProp ){
+	keywordProp = keywordProp || 'word';
+	if( typeof item1 == 'string' ){
+		var x = item1;
+		item1 = {};
+		item1[ keywordProp ] = x;
+	}
+	if( typeof item2 == 'string' ){
+		var x = item2;
+		item2 = {};
+		item2[ keywordProp ] = x;
+	}
+	if( !item1.encoded ){
+		encodeCorpus( [ item1 ], keywordProp );
+	}
+	if( !item2.encoded ){
+		encodeCorpus( [ item2 ], keywordProp );
+	}
+	var difference = 0;
+	var similarity = 0;
+	var maxLength = Math.max( item1.encoded.length, item2.encoded.length );
+	for( var i = 0; i < maxLength; i++ ){
+		var a = item1.encoded[ i ] || 0;
+		var b = item2.encoded[ i ] || 0;
+		difference += bitCount( a ^ b );
+		similarity += bitCount( a & b );
+	}
+	var shortKeywordPenalty = Math.max( 1 - maxLength, 0 );
+	//console.log( 'difference: ' + difference );
+	//console.log( 'similarity: ' + similarity );
+	//console.log( item1[ keywordProp ] + ' : ' + item2[ keywordProp ] + ' dist: ' + Math.min( ( shortKeywordPenalty + difference ) / ( difference + similarity ), 1 ) );
+	return Math.min( ( shortKeywordPenalty + difference ) / ( difference + similarity ), 1 );
+}
+
+function dist2( category, item ){
+	var difference = 0;
+	var similarity = 0;
+	var maxLength = Math.max( item.encoded.length, category.encoded.length );
+	for( var i = 0; i < maxLength; i++ ){
+		var itemEncoded = item.encoded[ i ] || 0;
+		var categoryEncoded = category.encoded[ i ] || 0;
+		difference += bitCount( ~itemEncoded & categoryEncoded );
+		similarity += bitCount( itemEncoded & categoryEncoded );
+	}
+	//Logger.log( 'difference : ' + difference );
+	//Logger.log( 'similarity : ' + similarity );
+	
+	return difference / ( difference + similarity );
+}
+
+function findDuplicates( words1, words2, maxDist ){
+
+	function relLevenshteinDist( word1, word2 ){
+		var dist = levenshtein( word2.word, word1.word );
+		var maxLength = Math.max( Math.max( word1.word.length, word2.word.length ), 1 );
+		return dist / maxLength;
+	}
+
+	var res = words2
+		.reduce( ( acc, word2 ) => {
+			var dups = words1
+				.filter( word1 => dist( word2, word1 ) <= maxDist )
+				.filter( word1 => relLevenshteinDist( word1, word2 ) <= maxDist )
+				.map( word1 => word1.word + ' -> ' + word2.word + ' ( ' +
+				( Math.floor( levenshtein( word2.word, word1.word ) * 100 ) / 100 ) + ' )'
+			)
+			;
+			if( dups.length == 0 ){
+				acc.nonDups.push( word2.word );
+			}else{
+				acc.dups.push( dups[ 0 ] );
+			}
+			return acc;
+			
+		}, { dups: [], nonDups: [] } )
+	;
+	return res;
+}
+
+function start(){
+	var l = new Date().getTime();
+	var minSimilarity = document.querySelector( '#minSimilarity' ).value;
+	if( minSimilarity.endsWith( '%' ) ){
+		minSimilarity = minSimilarity.substring( 0, minSimilarity.length - 1 );
+	}
+	var maxDist = 1 - ( minSimilarity ) / 100;
+
+	var words1 = document.querySelector( '#ta1' ).value.split( '\n' );
+	var words2 = document.querySelector( '#ta2' ).value.split( '\n' );
+	document.querySelector( '#ta3' ).value = '';
+	document.querySelector( '#ta4' ).value = '';
+	
+	words1 = words1.map( word => word.replace( /\+/g, '' ) );
+	words2 = words2.map( word => word.replace( /\+/g, '' ) );
+	
+	words1 = words1.map( word => ( { word : word.trim() } ) );
+	words2 = words2.map( word => ( { word : word.trim() } ) );
+	
+	words1 = words1.filter( onlyUnique ).filter( x => x != '' );
+	words2 = words2.filter( onlyUnique ).filter( x => x != '' );
+	
+	words1 = encodeCorpus( words1, 'word' );
+	words2 = encodeCorpus( words2, 'word' );
+	
+	res = findDuplicates( words1, words2, maxDist );
+
+	document.querySelector( '#ta3' ).value = res.dups.join( '\n' );
+	document.querySelector( '#ta4' ).value = res.nonDups.join( '\n' );
+	
+	l = Math.floor( ( new Date().getTime() - l ) / 1000 );
+	console.log( 'duration: ' + l + ' seconds' );
+}
+
+</script>

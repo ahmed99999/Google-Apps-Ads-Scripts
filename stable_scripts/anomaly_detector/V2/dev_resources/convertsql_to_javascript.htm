@@ -1,0 +1,127 @@
+<meta charset="UTF-8">
+<title>SQL_Converter</title>
+<body>
+<pre id="output" style=""></pre>
+<textarea style="visibility:hidden;width:12;height:12;">
+
+
+-- conversion_lag_writer
+SELECT
+  Date AS Date,
+  CURRENT_TIMESTAMP() AS RequestTime,
+  customer.AccountDescriptiveName,
+  customer.ExternalCustomerId,
+  SUM( Conversions ) AS Conversions,
+  SUM( ConversionValue ) AS ConversionValue,
+  SUM( Clicks ) AS Clicks
+FROM `biddy-io.peak_ace_active_clients_transfer.AccountBasicStats_1036246249` AS stat
+JOIN `biddy-io.peak_ace_active_clients_transfer.Customer_1036246249` AS customer ON customer.ExternalCustomerId = stat.ExternalCustomerId
+WHERE TRUE
+  AND customer._DATA_DATE = customer._LATEST_DATE
+  AND DATE_DIFF( CURRENT_DATE( 'Europe/Berlin' ), Date, DAY ) <= 90
+GROUP BY
+  Date,
+  customer.AccountDescriptiveName,
+  customer.ExternalCustomerId
+
+
+
+
+
+
+
+
+-- conversion_lag_latest
+SELECT
+  DATE( RequestTime ) AS RequestDate,
+  Date,
+  AccountDescriptiveName,
+  ExternalCustomerId,
+  Conversions,
+  ConversionValue,
+  Clicks
+FROM (
+  SELECT
+    *,
+    ROW_NUMBER() OVER ( PARTITION BY _PARTITIONDATE, Date, AccountDescriptiveName, ExternalCustomerId ORDER BY RequestTime DESC ) as row_number
+  FROM `biddy-io.pa_anomaly_detector.conversion_lag`
+)
+WHERE TRUE
+  AND row_number = 1
+
+
+-- conversion_lag_view
+SELECT
+  DayDiff,
+  ExternalCustomerId,
+  GREATEST( IFNULL( ROUND( SUM( AVG( Conversions ) - AVG( ConversionsTheDayBefore ) ) OVER ( PARTITION BY ExternalCustomerId ORDER BY DayDiff RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING ) / NULLIF( AVG( Clicks ), 0 ), 4 ), 0 ), 0 ) AS ExpectedAdditionalCR,
+  GREATEST( IFNULL( ROUND( SUM( AVG( ConversionValue ) - AVG( ValueTheDayBefore ) ) OVER ( PARTITION BY ExternalCustomerId ORDER BY DayDiff RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING ) / NULLIF( AVG( Clicks ), 0 ), 4 ), 0 ), 0 ) AS ExpectedAdditionalValuePerClick
+FROM (
+  SELECT
+    ExternalCustomerId,
+    Conversions,
+    ConversionValue,
+    Clicks,
+    DATE_DIFF( RequestDate, Date, DAY ) - 1 AS DayDiff,
+    AVG( Conversions ) OVER ( PARTITION BY Date, AccountDescriptiveName, ExternalCustomerId ORDER BY RequestDate ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING ) as ConversionsTheDayBefore,
+    AVG( ConversionValue ) OVER ( PARTITION BY Date, AccountDescriptiveName, ExternalCustomerId ORDER BY RequestDate ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING ) as ValueTheDayBefore,
+    COUNT(*) OVER ( PARTITION BY Date, AccountDescriptiveName, ExternalCustomerId ORDER BY RequestDate ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING ) as count
+  FROM `biddy-io.pa_anomaly_detector.conversion_lag_latest`
+  WHERE TRUE
+    --AND ExternalCustomerId = 7056468392
+)
+WHERE TRUE
+  AND count = 1 -- exclude the first data-point which has no preceding day to compare with
+GROUP BY ExternalCustomerId, DayDiff
+ORDER BY ExternalCustomerId, DayDiff
+
+
+
+
+
+
+
+
+</textarea>
+
+</body>
+<script>
+
+var BIGQUERY_PROJECT_ID = 'biddy-io';
+var BIGQUERY_DATASET_ID = 'peak_ace_active_clients_transfer';
+var MCC_ID = 1036246249;
+var VIEW_PREFIX = '2';
+
+
+var ta = document.querySelector('textarea');
+var queries = ta.value.split( '\n\n' ).map( a => a.trim() ).filter( a => a.length > 0 );
+
+var res = '';
+
+queries.forEach( query => {
+	var split = query.split('\n');
+
+	var first = '';
+	if( split[ 0 ].substring( 0, 2 ) == '--' ){
+		first = '\n\t' + split[ 0 ].substring( 3 ).toUpperCase() + ' : [\n';
+		split.shift();
+	}
+
+	res += first + split
+		.map( row => row.replace( /\\/g, '\\\\' ) )
+		.map( row => row.replace( /'/g, '\\\'' ) )
+		.map( row => row.replace( new RegExp( '`' + BIGQUERY_PROJECT_ID + '.' + BIGQUERY_DATASET_ID + '.', 'g'),
+			'`\' + BIGQUERY.PROJECT_ID + \'\.\' + BIGQUERY.TRANSFER_SERVICE_DATASET_ID + \'\.' ) )
+		.map( row => row.replace( new RegExp( MCC_ID + '`', 'g' ), '\' + ACCOUNT_ID + \'`' ) )
+		.map( row => '\t\t\'' + row + '\',' )
+		.map( row => row.replace( new RegExp( '\\.' + VIEW_PREFIX ), '.\' + VIEW_PREFIX + \'' ) )
+		.join('\n')
+		+ '\n\t].join( \'\\n\' ),'
+	;
+});
+document.getElementById( 'output' ).innerHTML = res;
+
+//ta.focus();
+//setTimeout( 'ta.select();', 200 );
+
+</script>

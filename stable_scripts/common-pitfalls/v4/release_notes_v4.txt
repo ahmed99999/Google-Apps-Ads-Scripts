@@ -1,0 +1,9 @@
+- renamed
+- removed
+- new
+	campaign_enabled_at_weekend
+	ad_group_enabled_at_weekend
+	keywords_enabled_at_weekend
+- added columnts
+- removed columns
+

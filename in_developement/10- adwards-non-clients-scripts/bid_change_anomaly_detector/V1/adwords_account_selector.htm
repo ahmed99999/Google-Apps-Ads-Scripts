@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>Account-Selector</title>
+<meta charset='UTF-8'/>
+</head>
+<body>
+
+<select id="account" size="1">
+	<option value="5086002">Peak Ace Ag</option>
+	<option value="269091339">Peak Ace Aktive Betreuung</option>
+	<option value="5086002">Peak Ace Ag</option>
+</select>
+
+<select id="target">
+	<option value="overview">overview</option>
+	<option value="changehistory">changehistory</option>
+	<option value="bulk/scripts/management">scripts</option>
+</select>
+
+<button onClick="jaascript:go();">Go</button>
+
+<a href="https://ads.google.com/aw/changehistory?ocid=8901726&tableState={"2"%3A{"2"%3A[{"1"%3A"external_user_id"%2C"2"%3A3%2C"4"%3A[{"3"%3A"{\"1\"%3A\"8901726\"%2C\"2\"%3A\"68711442\"%2C\"3\"%3A\"bidmanagement%40ads2people.de\"%2C\"4\"%3Afalse%2C\"5\"%3A\"2729824258\"}"}]}]}}&dateRange={"1"%3A"20181108"%2C"2"%3A"20181108"%2C"3"%3Afalse}">
+A&O change-history
+</a>
+
+</body>
+</html>
+
+<script>
+
+function go(){
+	var account = document.getElementById( 'account' );
+	ocid = account.options[ account.selectedIndex ].value;
+	var target = document.getElementById( 'target' );
+	target = target.options[ target.selectedIndex ].value;
+	var url = 'https://ads.google.com/aw/' + target + '?ocid=' + ocid;
+	alert( url );
+	location = url;
+}
+
+
+</script>

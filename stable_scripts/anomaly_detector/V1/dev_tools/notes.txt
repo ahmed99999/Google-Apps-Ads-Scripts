@@ -1,0 +1,134 @@
+share-pusher
+settings-synchronizer
+transfer-trigger
+
+lag-berechnungen
+email-Versender
+
+
+Vorteile
+	- keine Aufteilung in 50 Konten Häppchen
+		- weniger Emails, weil alle betroffenen Konten in einer Email
+		- einfacher zu maintainen
+			- nicht jedes mal eine neue Script-Instanz starten, wenn neue Konten dazukommen
+			- script-updates einfacher, da nur eine Instanz
+	- kombinierbar mit anderen internen und externen tools
+		- Data-Studio
+		- common-pitfalls
+		- Biddy
+	- Business-Logic (Anomalienerkennung) is in SQL statt Javascript
+		- unproblematischer beim Weitergeben ( SQL ist nich so gefährlich wie Javascript )
+		- z.B. würde ein Data-Stduio-Dashbaord mit SQL allein betrieben werden können
+	- Logs
+		- wann wurde welche Anomalie an wen gemeldet
+		- Backtesting möglich
+
+
+Ideen
+	- Zeitreihenanalyse
+		- Trend
+		- Saisonalitäten
+	- use hooks (pub-sub?) to trigger script after transfer-service is done
+
+
+Plan
+	- fehlende Features
+		- conv-lag ( optional ) 4h
+			- currentValueOriginal
+		- share-metrics 4h
+		-- --------------------
+		- Ahmed
+			- add ocids from settings
+			- pause-until
+			- Executive emails
+			- Executive-hour
+			- currency
+		- too many supporting metrics
+		- Settings-Synchronizer einbauen
+
+
+Metrics
+
+-- simple
+Clicks
+Impressions
+Cost
+Conversions
+ConversionValue
+
+-- share
+SearchImpressionShare
+SearchRankLostImpressionShare
+SearchBudgetLostImpressionShare
+
+-compound
+Ctr
+Cpc
+Cvr
+Cpo
+
+
+
+
+
+
+
+-- anomalies grouped by time
+SELECT
+  Time,
+  count(*) as count_anomalies
+FROM `biddy-io.anomaly_detector.anomaly`
+	WHERE TRUE
+		AND _PARTITIONDATE = CURRENT_DATE( 'Europe/Berlin' )
+GROUP BY
+  Time
+ORDER BY
+  Time DESC
+
+
+
+
+
+-- prepared_email_addresses
+SELECT
+	--account_name,
+    CAST( REGEXP_REPLACE( account_id, '-', '' ) AS INT64 ) as account_id,
+	TRIM( email ) as email
+FROM `biddy-io.anomaly_detector.settings`, UNNEST( SPLIT( emails_comma_separated_, ',' ) ) as email
+WHERE TRUE
+	AND emails_comma_separated_ IS NOT NULL
+	AND REGEXP_CONTAINS( account_id, '\\d\\d\\d-\\d\\d\\d-\\d\\d\\d\\d' )
+	AND REGEXP_CONTAINS( emails_comma_separated_, r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(,\s[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)*$" )
+ORDER BY
+	--account_name,
+	email
+
+
+-- anomaly_emails
+SELECT
+	email,
+	ARRAY_AGG(
+		STRUCT(
+			Metric,
+			DayCount,
+			AvgHistoricValue,
+			CurrentValue,
+			StdDevFactor,
+			AccountDescriptiveName,
+			ExternalCustomerId,
+			HistricValues,
+			Smetric,
+			Time
+		)
+	) AS anomaly
+FROM `biddy-io.anomaly_detector.current_anomalies` as anomalies
+JOIN `biddy-io.anomaly_detector.prepared_email_addresses`
+	ON TRUE
+	AND account_id = ExternalCustomerId
+WHERE TRUE
+GROUP BY email
+
+
+
+
+

@@ -1,0 +1,12 @@
+- kaputt google sheets: screenshot finden
+- googlen von Fehlermeldung
+- Kommunikation mit Google Support finden: Deren Antwort war 
+
+- url für airtables einbauen (bluren)
+- Marcel Zugang zu Airtables geben
+
+
+- Github oder (besser) Bitbucket (public repo)
+
+
+ 

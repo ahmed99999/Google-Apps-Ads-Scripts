@@ -1,0 +1,117 @@
+Setup HOWTO
+
+Go to AdWords MCC account > Scripts > create new Script
+	- Copy Scriopt into textarea
+	- Change name to "Anomaly Detector" and save.
+	- Click on "Authorize now" and allow to use following services:
+		- View and manage your spreadsheets in Google Drive
+		- Manage your AdWords campaigns
+		- Send email as you
+		- Connect to an external service (Mailgun)
+	- set up a settings-sheet
+		- Create a new google sheet and save it.
+		- Rename the tab to "settings". Must match the variable SHEET_NAME.
+		- Enter a header row with following headers (copy-paste).
+			- Account-Name
+			- Account-Id
+			- ocid
+			- Emails (comma-separated)
+			- pause until yyyy-mm-dd
+			- executive email
+			- exec hours
+		- fill a row for each account of the mcc
+			- account name is only for readability (not used by the script)
+			- account-id must be entered in following format: 123-456-7890
+			- ocid is a url parameter in the new AdWords UI. It is used in Emails to create a link which opens the AdWords UI.
+			- emails = a comma separated list of email addresses to which alerts are sent
+			- if a date is entered in the column "pause until yyyy-mm-dd" then no alerts are sent for this account until that date
+				- This can be used to disable alerts for some time.
+			- "executive email" like the normal emails column, but alerts are only sent at exec hours
+			- "exec hours" are comma separated numbers {0,24} at which executive emails are sent
+		- copy the url and paste it into the SETTINGS_SHEET_URL variable.
+	- set up a lag data sheet (it is used to store conversion-lag data by the script)
+		- create a new google Sheet
+		- copy the url and paste it into the LAG_DATA_SHEET_URL variable
+	- Adjust Settings
+		- set time zone to Account time zone. For UTC the string "GMT" should be used.
+		- LAG_DATA_SHEET_URL = Sheet to save and retrieve conversion-lag data.
+		- SETTINGS_SHEET_URL = Where to read settings from.
+		- SHEET_NAME = Name of the settings sheet.
+		- WARNINGS_FOR_SHARE_METRICS = Shall we send warnings about impression share metrics?
+		- WARNINGS_FOR_COMPOUND_METRICS = Shall we send warnings about CPC, CPO, CTR and CPC ?
+		- SCRIPT_INSTANCE = For less than 50 accounts just set it to 1. 
+			- If you have more than 50 accounts start several instances of the script and enter a 1 in the first instance, a 2 in the second ...
+		- DOWN_SENSITIVITY
+			- enter a float or integer number > 2 for each metric.
+			- The larger this number for a metric is the higher the tolerance of the script for this metric to the bottom.
+			- And the less alerts are sent for decreasing values of this metric.
+			- Default value is 4.
+		- UP_SENSITIVITY
+			- same as DOWN_SENSITIVITY, but for the up direction of deviation of a metric from the average
+			- For example: a high UP_SENSITIVITY for conversions would trigger alerts only for very high increases of conversions.
+			- Default value is 4.
+		- IGNORE_LAST_HOURS should be set to 3. Since AdWords data for the last 3 hours is not reliable it should be ignored.
+		- ROOT_HACK
+			- artificially increase the variance for very stable metrics.
+			- For example if the cost was always in the interval [990, 1010] but today it is 1060 then the sensitivity setting would allow for an alert to be sent.
+				- ROOT_HACK prevents alerts for small deviations from average in case of small variance in the data.
+			- default value is "true"
+		- MIN_HACK
+			- if a metric goes down to (near) zero trigger an alert if the sensitivity-setting would usually prevent it.
+			- default value is "true"
+		HACK = true;
+		// If a warning for a metric in an account is reported then no warnings for the same metric in the same account will be reported for this many days.
+		// This can be helpful to mute warnings after they are reported for some days.
+		- SUSPEND_FOR
+			- Number of days to mute alerts for a combination of account and metric after an alert was sent.
+			- This prevents repeated emails for the same issue.
+			- Default value is 1 (day).
+		- DONT_RUN_UNTIL_HOUR
+			- in the first hours of a day only few data is available which increases volatility and triggers unwanted alerts.
+			- default value is 8
+		- COLOR_CODING_THRESHOLD
+			- if current value deviates from upper or lower bound by more than this value then use red color to indicate severity
+			- Default value is 1.7
+		- CONV_LAG_HOUR
+			- Starting At which hour shall we compute and save conv lag.
+			- Default value is 22
+		- MAX_ROWS
+			- How many samples of conv-lag do we gather?
+			- Should be >= 7 and not too big to avoid hitting 2 mio cells limit in sheets.
+		- MIN_ROUND_TO;
+			- Omit up to x digits before the decimal point for big values in emails.
+			- Example: a value of -2 would convert 123456789 to 123456800
+			- default value is -2
+		- MAX_ROUND_TO
+			- Never display more than x digits after decimal point.
+			- Example: 1.2345 would be converted to 1.23
+			- Default value is 2.
+		- MAILGUN
+			- SEND_EMAILS_THROUGH_MAILGUN
+				- set this to true to use mailgun for emails.
+				- if it is set to false than Google AdWords emails are used (limited to 100 per day for standard accounts)
+				- default: false
+			- URL
+				- your mailgun-url
+			- FROM
+				- email shown as sender in emails
+			- AUTHORISATION
+				- your mailgun token encoded
+		- ONLY_THIS_ACCOUNT
+			- used for developement only. should not be changed.
+			- default value: null
+		- SEND_DATA_TO_DEVELOPER
+			- used only for developement. should not be changed.
+			- default: false
+		- SEND_EMAILS_ONLY_TO_DEVELOPER
+			- used only for developement. should not be changed.
+			- default: false
+		- VERBOSE
+			- if set to true more info is printed to the console.
+			- default: false
+		- DEVELOPER_EMAIL
+			- email address to send notifications if script encounters a problem
+	- No EMAILs are send in PREVIEW MODE except to the DEVELOPER_EMAIL.
+	
+	
+

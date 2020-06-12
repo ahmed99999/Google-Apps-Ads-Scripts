@@ -1,0 +1,913 @@
+<title>Anomaly Detector</title>
+<meta charset="UTF-8">
+<script src="example_data.js"></script>
+<script src="new_anomaly_detector.js"></script>
+<body>
+<pre id="output"></pre>
+<script>
+
+//developement();
+
+var alerts = {
+	"a.tissen@pa.ag": [
+		{
+			"metric": {
+				"name": "ConversionValue",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 3,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Conversions"
+				]
+			},
+			"daysBack": 1,
+			"accountId": "405-612-3849",
+			"ocid": "3727181",
+			"accountName": "Gartenmoebel-Einkauf.de",
+			"currentValue": 1625.038908,
+			"lowerBound": 0,
+			"upperBound": 1314.744937834046,
+			"avg": 202.05873333333332,
+			"outOfBounds": true,
+			"currentValueOriginal": 1535.73,
+			"avgOriginal": 201.29333333333332,
+			"supportingMetrics": [
+				{
+					"name": "Conversions",
+					"was": 1.9958333333333336,
+					"is": 13.418000000000001
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Clicks",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Ctr",
+					"Impressions",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 4,
+			"accountId": "120-953-0348",
+			"ocid": "6974161",
+			"accountName": "Containerdienst",
+			"currentValue": 8655,
+			"lowerBound": 3046.408119318168,
+			"upperBound": 8042.758547348499,
+			"avg": 5544.583333333333,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Ctr",
+					"was": null
+				},
+				{
+					"name": "Impressions",
+					"was": 82106,
+					"is": 98646
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5327411785803827,
+					"is": 0.494659165744233
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0.00009132657526173091,
+					"is": 0
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Cost",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Clicks",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "557-052-7445",
+			"ocid": "210890053",
+			"accountName": "GartenFlora",
+			"currentValue": 73.49999999999999,
+			"lowerBound": 2.786666666666667,
+			"upperBound": 63.27845641709352,
+			"avg": 23.867499999999996,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Clicks",
+					"was": 73.75,
+					"is": 114
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5014364264854132,
+					"is": 0.5975030999444334
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0,
+					"is": 0
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": 0.4272051837435417,
+					"is": 0.33161118692086883
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Impressions",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "959-240-2545",
+			"ocid": "218723702",
+			"accountName": "Shop.Geo-Care.de",
+			"currentValue": 115437,
+			"lowerBound": 0,
+			"upperBound": 102432.07176851445,
+			"avg": 14376,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "SearchImpressionShare",
+					"was": null,
+					"is": 0.5627091965076992
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": null,
+					"is": 0.09591425104966649
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": null,
+					"is": 0.2846702143311922
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		}
+	],
+	"db@peakace.de": [
+		{
+			"metric": {
+				"name": "ConversionValue",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 3,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Conversions"
+				]
+			},
+			"daysBack": 1,
+			"accountId": "405-612-3849",
+			"ocid": "3727181",
+			"accountName": "Gartenmoebel-Einkauf.de",
+			"currentValue": 1625.038908,
+			"lowerBound": 0,
+			"upperBound": 1314.744937834046,
+			"avg": 202.05873333333332,
+			"outOfBounds": true,
+			"currentValueOriginal": 1535.73,
+			"avgOriginal": 201.29333333333332,
+			"supportingMetrics": [
+				{
+					"name": "Conversions",
+					"was": 1.9958333333333336,
+					"is": 13.418000000000001
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Clicks",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Ctr",
+					"Impressions",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 4,
+			"accountId": "120-953-0348",
+			"ocid": "6974161",
+			"accountName": "Containerdienst",
+			"currentValue": 8655,
+			"lowerBound": 3046.408119318168,
+			"upperBound": 8042.758547348499,
+			"avg": 5544.583333333333,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Ctr",
+					"was": null
+				},
+				{
+					"name": "Impressions",
+					"was": 82106,
+					"is": 98646
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5327411785803827,
+					"is": 0.494659165744233
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0.00009132657526173091,
+					"is": 0
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Cost",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Clicks",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "557-052-7445",
+			"ocid": "210890053",
+			"accountName": "GartenFlora",
+			"currentValue": 73.49999999999999,
+			"lowerBound": 2.786666666666667,
+			"upperBound": 63.27845641709352,
+			"avg": 23.867499999999996,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Clicks",
+					"was": 73.75,
+					"is": 114
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5014364264854132,
+					"is": 0.5975030999444334
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0,
+					"is": 0
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": 0.4272051837435417,
+					"is": 0.33161118692086883
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Impressions",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "959-240-2545",
+			"ocid": "218723702",
+			"accountName": "Shop.Geo-Care.de",
+			"currentValue": 115437,
+			"lowerBound": 0,
+			"upperBound": 102432.07176851445,
+			"avg": 14376,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "SearchImpressionShare",
+					"was": null,
+					"is": 0.5627091965076992
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": null,
+					"is": 0.09591425104966649
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": null,
+					"is": 0.2846702143311922
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		}
+	],
+	"p.perez@pa.ag": [
+		{
+			"metric": {
+				"name": "ConversionValue",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 3,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Conversions"
+				]
+			},
+			"daysBack": 1,
+			"accountId": "405-612-3849",
+			"ocid": "3727181",
+			"accountName": "Gartenmoebel-Einkauf.de",
+			"currentValue": 1625.038908,
+			"lowerBound": 0,
+			"upperBound": 1314.744937834046,
+			"avg": 202.05873333333332,
+			"outOfBounds": true,
+			"currentValueOriginal": 1535.73,
+			"avgOriginal": 201.29333333333332,
+			"supportingMetrics": [
+				{
+					"name": "Conversions",
+					"was": 1.9958333333333336,
+					"is": 13.418000000000001
+				}
+			]
+		}
+	],
+	"mh@ads2people.de": [
+		{
+			"metric": {
+				"name": "ConversionValue",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 3,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Conversions"
+				]
+			},
+			"daysBack": 1,
+			"accountId": "405-612-3849",
+			"ocid": "3727181",
+			"accountName": "Gartenmoebel-Einkauf.de",
+			"currentValue": 1625.038908,
+			"lowerBound": 0,
+			"upperBound": 1314.744937834046,
+			"avg": 202.05873333333332,
+			"outOfBounds": true,
+			"currentValueOriginal": 1535.73,
+			"avgOriginal": 201.29333333333332,
+			"supportingMetrics": [
+				{
+					"name": "Conversions",
+					"was": 1.9958333333333336,
+					"is": 13.418000000000001
+				}
+			]
+		}
+	],
+	"c.mohr@pa.ag": [
+		{
+			"metric": {
+				"name": "Clicks",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Ctr",
+					"Impressions",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 4,
+			"accountId": "120-953-0348",
+			"ocid": "6974161",
+			"accountName": "Containerdienst",
+			"currentValue": 8655,
+			"lowerBound": 3046.408119318168,
+			"upperBound": 8042.758547348499,
+			"avg": 5544.583333333333,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Ctr",
+					"was": null
+				},
+				{
+					"name": "Impressions",
+					"was": 82106,
+					"is": 98646
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5327411785803827,
+					"is": 0.494659165744233
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0.00009132657526173091,
+					"is": 0
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Cost",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Clicks",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "557-052-7445",
+			"ocid": "210890053",
+			"accountName": "GartenFlora",
+			"currentValue": 73.49999999999999,
+			"lowerBound": 2.786666666666667,
+			"upperBound": 63.27845641709352,
+			"avg": 23.867499999999996,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Clicks",
+					"was": 73.75,
+					"is": 114
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5014364264854132,
+					"is": 0.5975030999444334
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0,
+					"is": 0
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": 0.4272051837435417,
+					"is": 0.33161118692086883
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Impressions",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "959-240-2545",
+			"ocid": "218723702",
+			"accountName": "Shop.Geo-Care.de",
+			"currentValue": 115437,
+			"lowerBound": 0,
+			"upperBound": 102432.07176851445,
+			"avg": 14376,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "SearchImpressionShare",
+					"was": null,
+					"is": 0.5627091965076992
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": null,
+					"is": 0.09591425104966649
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": null,
+					"is": 0.2846702143311922
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		}
+	],
+	"c.wiemer@pa.ag": [
+		{
+			"metric": {
+				"name": "Clicks",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Ctr",
+					"Impressions",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 4,
+			"accountId": "120-953-0348",
+			"ocid": "6974161",
+			"accountName": "Containerdienst",
+			"currentValue": 8655,
+			"lowerBound": 3046.408119318168,
+			"upperBound": 8042.758547348499,
+			"avg": 5544.583333333333,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Ctr",
+					"was": null
+				},
+				{
+					"name": "Impressions",
+					"was": 82106,
+					"is": 98646
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5327411785803827,
+					"is": 0.494659165744233
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0.00009132657526173091,
+					"is": 0
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Cost",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"Clicks",
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "557-052-7445",
+			"ocid": "210890053",
+			"accountName": "GartenFlora",
+			"currentValue": 73.49999999999999,
+			"lowerBound": 2.786666666666667,
+			"upperBound": 63.27845641709352,
+			"avg": 23.867499999999996,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "Clicks",
+					"was": 73.75,
+					"is": 114
+				},
+				{
+					"name": "SearchImpressionShare",
+					"was": 0.5014364264854132,
+					"is": 0.5975030999444334
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": 0,
+					"is": 0
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": 0.4272051837435417,
+					"is": 0.33161118692086883
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		},
+		{
+			"metric": {
+				"name": "Impressions",
+				"requestInReport": true,
+				"isMetric": true,
+				"isActive": true,
+				"down": 4,
+				"up": 4,
+				"isAddable": true,
+				"supportingMetrics": [
+					"SearchImpressionShare",
+					"SearchBudgetLostImpressionShare",
+					"SearchRankLostImpressionShare",
+					"AverageCpc"
+				]
+			},
+			"daysBack": 2,
+			"accountId": "959-240-2545",
+			"ocid": "218723702",
+			"accountName": "Shop.Geo-Care.de",
+			"currentValue": 115437,
+			"lowerBound": 0,
+			"upperBound": 102432.07176851445,
+			"avg": 14376,
+			"outOfBounds": true,
+			"supportingMetrics": [
+				{
+					"name": "SearchImpressionShare",
+					"was": null,
+					"is": 0.5627091965076992
+				},
+				{
+					"name": "SearchBudgetLostImpressionShare",
+					"was": null,
+					"is": 0.09591425104966649
+				},
+				{
+					"name": "SearchRankLostImpressionShare",
+					"was": null,
+					"is": 0.2846702143311922
+				},
+				{
+					"name": "AverageCpc",
+					"was": null
+				}
+			]
+		}
+	]
+};
+
+
+function clone( obj ){
+	if ( obj === null || typeof( obj ) !== 'object' || 'isActiveClone' in obj ){
+		return obj;
+	}
+
+	var temp;
+	if ( obj instanceof Date ){
+		temp = new obj.constructor(); //or new Date( obj );
+	} else {
+		temp = obj.constructor();
+	}
+
+	for ( var key in obj ){
+		if ( Object.prototype.hasOwnProperty.call( obj, key ) ){
+			obj['isActiveClone'] = null;
+			temp[key] = clone( obj[key] );
+			delete obj['isActiveClone'];
+		}
+	}
+	return temp;
+}
+
+function partition( arr ){
+	return {
+		by: function( keyName ){
+			var res = {};
+
+			for ( var i = 0; i < arr.length; i++ ){
+				var obj = clone( arr[i] );
+				var key;
+				if ( typeof keyName == 'function' ){
+					key = keyName( obj );
+				} else {
+					key = obj[ keyName ];
+				}
+
+				// init
+				res[ key ] = ( res[ key ] || [] );
+				if( typeof keyName != 'function' ){
+					delete obj[ keyName ];
+				}
+				res[ key ].push( obj );
+			}
+			return res;
+		}
+	};
+}
+var Logger = {
+	log : function( value ){
+		document.write( value + '<br>' );
+	}
+};
+
+var alerts = partition( alerts[ 'a.tissen@pa.ag' ] ).by( 'accountName' );
+
+
+
+
+
+
+for( var accountName in alerts ){ break;
+	alerts[ accountName ].forEach( function( alert1 ){
+		var name = alert1.metric.name;
+		
+		//var formatted = formatMetric( name, alert1.lowerBound );
+		var formatted = formatMetric( name, alert1.avg );
+		//var formatted = formatMetric( name, alert1.upperBound );
+		//var formatted = formatMetric( name, alert1.currentValue, alert1.currentValueOriginal );
+		Logger.log( 'formatted: ' + formatted );
+		//document.write( JSON.stringify( alert1, null, '\t' ) );
+		
+		throw new Error('');
+	})
+	break;
+}
+
+
+function formatMetric( name, value, originalValue ){
+	Logger.log( 'formatMetric( ' + JSON.stringify( name ) + ', ' + value + ', ' + originalValue );
+	var round1 = roundTo( 1 );
+	var digits = 4;
+	var round_ = roundTodSignificantDigits;
+	
+	var percentMetrics = [ 'Ctr', 'Cvr', 'SearchImpressionShare', 'SearchBudgetLostImpressionShare', 'SearchRankLostImpressionShare' ];
+	
+	var suffix = percentMetrics
+		.indexOf( name ) >= 0 ? '%' : 
+		[ 'Cpc', 'Cpo', 'Cost', 'ConversionValue' ].indexOf( name ) >= 0 ? '€' : ''; 
+
+	if( percentMetrics.indexOf( name ) >= 0 ){
+		value *= 100;
+	}
+	
+	var res = round_( value, digits ) + suffix;
+	
+	if( [ 'Conversions', 'ConversionValue' ].indexOf( name ) >= 0 && originalValue != undefined ){
+		var diff = value - originalValue;
+		res = round_( originalValue, digits ) + suffix + '(+' + round_( diff, digits ) + suffix + ')';
+	}
+	
+	return res;
+}
+
+function roundX( value, digits ){
+	if( value === null || value === undefined ){
+		return value;
+	}
+	var dec = Math.pow( 10, digits == undefined ? 2 : digits );
+	return Math.round( value * dec ) / dec;
+}
+
+function roundTodSignificantDigits( value, digits, min, max ){
+
+	var digits2 = digits - 1 - Math.floor( Math.log( value ) / Math.log( 10 ) );
+	if( value <= 0 ){
+		digits2 = 0;
+	}
+  var digits3 = digits2;
+	digits3 = min != undefined ? Math.max( digits3, min ) : digits3;
+	digits3 = max != undefined ? Math.min( digits3, max ) : digits3;
+	
+  Logger.log( 'value: ' + value + ';digits: ' + digits + '; digits2: ' + digits2 + '; digits3: ' + digits3 + '; min: ' + min + '; max: ' + max   );
+	
+	return roundX( value , digits3 );
+}
+
+roundTodSignificantDigits( 115400, 2, -1, 2 );
+
+function assert( cond, message ){
+	if( !cond ) throw new Error( message );
+}
+
+function assertEqual( a, b, message ){
+	if( a != b ) throw new Error( a + ' and ' + b + ' are not equal' );
+}
+/*
+assertEqual( roundTodSignificantDigits( 123456.234, 3 ), 123000 );
+
+assertEqual( roundTodSignificantDigits( 123456.234, 6 ), 123456 );
+
+assertEqual( roundTodSignificantDigits( 123456.234, 7 ), 123456.2 );
+
+assertEqual( roundTodSignificantDigits( 0.234, 3 ), .234 );
+
+assertEqual( roundTodSignificantDigits( 0.234, 2 ), .23 );
+*/
+// assertEqual( roundTodSignificantDigits( 0, 2 ), 0 );
+//assertEqual( roundTodSignificantDigits( 202.05873333333332, 4 ), 202.1 );
+
+</script>
+</body>

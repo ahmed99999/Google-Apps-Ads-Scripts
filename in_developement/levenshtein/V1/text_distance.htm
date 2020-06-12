@@ -1,0 +1,163 @@
+<head>
+<title>Text-Distance</title>
+<meta charset="UTF-8"/>
+<style>
+button{
+	width:100%;
+	height:50px;
+	font-size:30px;
+}
+textarea{
+	min-width : 800px;
+	min-height : 400px;
+	width: 100%;
+}
+div{
+	border-width: 1px;
+	border-color: red;
+	order-style: solid;
+	display: inline-block;
+	min-width: 24.8%;
+}
+</style>
+</head>
+<body>
+<div style="display: block;">
+	<button onClick="clear1();">Clear</button>
+</div>
+<div>
+	<h2><label for="ta1">Text1</label></h2>
+	<textarea id="ta1"></textarea>
+</div>
+<div>
+	<h2><label for="ta2">Text2</label></h2>
+	<textarea id="ta2"></textarea>
+</div>
+<div style="display: block;">
+	<button onClick="start();">Execute</button>
+</div>
+<div>
+	<h2><label for="ta3">Similarity</label></h2>
+	<input id="ta3"/>
+</div>
+
+
+</body>
+<script>
+
+function clear1(){
+	document.querySelector( '#ta1' ).value = '';
+	document.querySelector( '#ta2' ).value = '';
+}
+
+function levenshtein( a, b ){
+	if( a.length == 0 ){ return b.length }
+	if( b.length == 0 ){ return a.length }
+	
+	var matrix = [];
+	
+	// increment along the first column of each row
+	var i;
+	for( i = 0; i <= b.length; i++ ){
+		matrix[ i ] = [ i ];
+	}
+	
+	// increment each column in the first row
+	var j;
+	for( j = 0; j <= a.length; j++ ){
+		matrix[ 0 ][ j ] = j;
+	}
+	
+	// Fill in the rest of the matrix
+	for( i = 1; i <= b.length; i++ ){
+		for( j = 1; j <= a.length; j++ ){
+			if( b.charAt( i - 1 ) == a.charAt( j - 1 ) ){
+				matrix[ i ][ j ] = matrix[ i - 1 ][ j - 1 ];
+			} else {
+				matrix[ i ][ j ] = Math.min( matrix[ i - 1 ][ j - 1 ] + 1, // substitution
+				                             matrix[ i     ][ j - 1 ] + 1, // insertion
+				                             matrix[ i - 1 ][ j     ] + 1  // deletion
+			                               );
+			}
+		}
+	}
+	return matrix[ b.length ][ a.length ];
+};
+
+Number.prototype.times = function( callback ){
+	for( var i = 1; i <= Number( this.valueOf() ); i++ ){
+		callback( i );
+	};
+}
+
+function property( prop ){
+	return function( item ){
+		if( typeof item[ prop ] == 'function' ){
+			return item[ prop ]();
+		}
+		return item[ prop ];
+	};
+}
+
+function onlyUnique( value, index, self ){
+    return self.indexOf( value ) === index;
+}
+
+function flatten( arr ){
+	if( arr.flat ){
+		return arr.flat( 1 );
+	}
+	return [].concat.apply([], arr );
+}
+
+function start(){
+	var l = new Date().getTime();
+	
+	var text1 = document.querySelector( '#ta1' ).value;
+	var text2 = document.querySelector( '#ta2' ).value;
+	
+	//document.querySelector( '#ta3' ).value = levenshtein( text1, text2 );
+	
+	function process( str ){
+		return str
+			.split( /\b/ )
+			.map( x => x.split( /\W+/ ).join( '' ).trim() )
+			.filter( x => x.length > 0 )
+		;
+	}
+	
+	var alphabet = process( text1 + ' ' + text2 )
+		.filter( onlyUnique )
+	;
+	
+	var encoded1 = process( text1 )
+		.map( x => alphabet.indexOf( x ) )
+		.map( x => String.fromCharCode( x ) )
+		.join( '' )
+	;
+	
+	var encoded2 = process( text2 )
+		.map( x => alphabet.indexOf( x ) )
+		.map( x => String.fromCharCode( x ) )
+		.join( '' )
+	;
+	var dist = Math.ceil(
+		100 *
+		levenshtein( encoded1, encoded2 )
+		/ Math.max( encoded1.length, encoded2.length, 1 )
+	);
+	
+	document.querySelector( '#ta3' ).value = 
+		'' + ( 100 - dist ) + '%'
+	;
+	
+	l = Math.floor( ( new Date().getTime() - l ) / 1000 );
+	console.log( 'duration: ' + l + ' seconds' );
+}
+
+</script>
+
+
+
+
+

@@ -1,0 +1,532 @@
+
+var email_receiptients = ['at@peakace.de', 'md@peakace.de'];
+
+
+// --- Settings -----------------------------
+var MCC_NAME = 'Airbnb';
+var SCRIPT_NAME = 'Final URL Checker';
+var ADMIN_EMAILS = ['at@peakace.de'];
+
+var BAD_HTTP_CODE_LABEL_PREFIX = 'PA- Final URL - ';
+var OUT_OF_STOCK_LABEL = 'PA out of stock';
+
+var STRIP_QUERY_STRING = true; // set this to false if the stuff that comes after the question mark is important
+var WRAPPED_URLS = true; // set this to true if you use a 3rd party like Marin or Kenshoo for managing you account
+
+// This is the specific text (or texts) to search for 
+// on the page that indicates the item 
+// is out of stock. If ANY of these match the html
+// on the page, the item is considered "out of stock"
+var OUT_OF_STOCK_TEXTS = ['icon icon-search icon-gray icon-size-1'];
+
+// 503 = The server is currently unavailable 
+// (because it is overloaded or down for maintenance). Generally, this is a temporary state.
+var GOOD_CODES = [ 200, 503, 500 ];
+
+// where to read the emails from
+var SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1cAz78W1xK-N14vUca6vCHcqIn07aP-ysxbOJlB1uqjo/edit?pli=1#gid=1805517194';
+var SETTINGS_SHEET = 'settings';
+var ID_COLUMN = 1; // 0-based
+var EMAIL_COLUMN = 2; // 0-based
+
+// split the execution into 24 parts. One part for each hour in one day
+var NUM_PARTS = 5;
+
+// split the accounts int 7 parts of roughly equal count of campaigns. One part for each day in a week.
+// this is to overcome the 20.000 fetchUrlRequest limit of adwordsScripts
+var ACCOUNT_IDS = [
+	[8803028751, 8596629616, 4644246477, 2659922818, 8443705116, 1676242478, 5522311858, 7681745194, 8377951937, 2457214602, 3795558561, 3282673662, 1815580557, 7785322096, 5205767931, 9779464949, 9364550205, 7849195654, 9461559217, 4902359784, 9993989545, 8340053935, 9049848014, 8194224561, 8048921438, 1154462163, 8691437822 ],
+	[2238824112, 8193193781, 3382952475, 9852077307, 3904758651 ],
+	[5296250242, 1230330963, 9013299573 ],
+	[6797188371, 8733418420, 5905014636 ],
+	[8912069877, 9936613432, 5456497301 ],
+	[3495505030, 1679569967 ],
+	[8026025140, 3519998675 ]
+];
+
+
+
+var HTTP_OPTIONS = {
+    muteHttpExceptions: true
+};
+// ------------------------------------------
+
+
+// Constants
+var ERROR_DURING_WEBSITE_LOAD = 0;
+
+
+
+
+function main(){
+	var currentPart = getCurrentPart();
+	var dayOfWeek = now().getDay();
+	Logger.log('start');
+	MccApp.accounts()
+		.withLimit( 50 )
+		.withIds( ACCOUNT_IDS[ dayOfWeek ] )
+		.executeInParallel(
+			"processAccount",
+			"sendMails",
+			JSON.stringify( { currentPart : currentPart } )
+		);
+}
+
+
+function processAccount( params ){
+	params = JSON.parse( params );
+	var campaignIds = computeCurrentCampaignIds( params.currentPart );
+	if( campaignIds.length == 0 ){
+		// the work is paritioned in NUM_PARTS parts.
+		// the part which is due this hour is empty ( no campaigns )
+		Logger.log( AdWordsApp.currentAccount().getName() + ': nothing to do -> quit');
+		return;
+	}
+	var labelInfo = prepareLabelInfo();
+
+	var resultContainer = {};
+   	
+	var count = 0;
+	
+	forEach( AdWordsApp.campaigns()
+		.withIds( campaignIds )
+		.withCondition( 'Status = ENABLED' ),
+		function( campaign ){
+			onlyFirst( campaign.keywords()
+				.withCondition( 'AdGroupStatus != DELETED' )
+				.withCondition( 'Status != DELETED' ),
+				function( keyword ){
+					var finalUrl = keyword.urls().getFinalUrl();
+					if( finalUrl ){
+						if( ++count % 100 == 0 ){
+							Logger.log( count );
+						}
+						var url = cleanUrl( finalUrl );
+						processURL( campaign, url, resultContainer, labelInfo );
+					}
+				}
+			);
+		}
+	);
+	
+	for( var url in resultContainer ){
+		var row = resultContainer[ url ];
+		if( !row.outOfStock && !isBadCode( row.httpCode ) ){
+			delete resultContainer[ url ];
+		}
+	}
+	
+	return JSON.stringify( resultContainer );
+}
+
+
+function parseResults( results ){
+	var res = {};
+	
+	var errors = {};
+	var countErrors = 0;
+	
+	for( var i = 0; i < results.length; i++ ){
+		
+		var status = results[i].getStatus();
+		var error = results[i].getError();
+		if( error ){
+			countErrors++;
+			errors[ error ] = 1;
+		}
+		
+		if( results[i].getReturnValue() == 'undefined' ){
+			// yes, adwords scripts really returns a string 'undefined'
+			// thread returned nothing. E.g. "return;"
+			continue;
+		}
+		
+		
+		var resultX = JSON.parse( results[i].getReturnValue() );
+		
+		if( null == resultX ){
+			// error in thread
+			continue;
+		}
+		// getCustomerId() gives strings a la '123-456-7890'
+		res[ results[i].getCustomerId() ] = resultX;
+	}
+	
+	if( countErrors > 0 ){
+		ADMIN_EMAILS.forEach( function( email ){
+			mailGun( email, 'errors in ' + SCRIPT_NAME + ' - ' + MCC_NAME, Object.keys( errors ).join('\n') );
+		});
+	}
+	
+	return res;
+}
+
+
+function processURL( campaign, url, resultContainer, labelInfo ){
+	var accountName = AdWordsApp.currentAccount().getName();
+    if( resultContainer[ url ] ){
+		resultContainer[ url ].campaignNames.push( campaign.getName() );
+	} else {
+		var website = load( url );
+		
+		var htmlText = website ? website.getContentText() : '';
+		var httpCode = website ? website.getResponseCode() : ERROR_DURING_WEBSITE_LOAD;
+		
+		resultContainer[ url ] = {
+			account			: accountName,
+			campaignNames 	: [ campaign.getName() ],
+			url 			: url,
+			httpCode 		: httpCode,
+			outOfStock 		: OUT_OF_STOCK_TEXTS.map( containedIn( htmlText ) ).reduce( or, false ),
+		};
+		if( resultContainer[ url ].outOfStock ){
+			Logger.log( 'Url: ' + url + ' is out of stock.' );
+		} else if( isBadCode( resultContainer[ url ].httpCode ) ){
+			Logger.log( 'Url: ' + url + ' returned ' + resultContainer[ url ].httpCode + ' http code.' );
+		}
+	}
+	if( resultContainer[ url ].outOfStock ){
+		applyLabel( campaign, OUT_OF_STOCK_LABEL, labelInfo );
+	}
+	if( isBadCode( resultContainer[ url ].httpCode ) ){
+		applyLabel( campaign, BAD_HTTP_CODE_LABEL_PREFIX + resultContainer[ url ].httpCode, labelInfo );
+	}
+}
+
+
+function applyLabel( campaign, labelName, labelInfo ){
+	// only if the label is not already assigned to this campaign
+	if( !labelInfo.campaigns[ campaign.getId() ] || 
+		!labelInfo.campaigns[ campaign.getId() ][ labelName ] ){
+		// create label if needed
+		if( !labelInfo.labels[ labelName ] ){
+			AdWordsApp.createLabel( labelName );
+			// memorize the creation and dont try to create again
+			labelInfo.labels[ labelName ] = 1;
+		}
+		// assign label
+		campaign.applyLabel( labelName );
+	}
+}
+
+
+
+
+function isBadCode( code ){
+	return GOOD_CODES.indexOf( code ) == -1;
+}
+
+function load( url ){
+	try {
+        return UrlFetchApp.fetch( url, HTTP_OPTIONS );
+    } catch (e) {
+        Logger.log('Es gab einen Fehler (' + e + '):' + url + ', Skipping.');
+		return null;
+    }
+}
+
+function joiner( delimiter ){
+	return function( str ){ return str.join( delimiter ) };
+}
+
+function sendMails( results ){
+	var results2 = parseResults( results );
+	
+	// { accountId : [] }
+	var emails = getEmails();
+	
+	var matrices = {}; // { email : [][] }
+	
+	for( var accountId in results2 ){
+		
+		var matrix = [];
+		for( var url in results2[ accountId ] ){
+			matrix.push( values( results2[ accountId ][ url ] ) );
+		}
+		emails( accountId ).forEach( function( email ){
+			matrices[ email ] = matrices[ email ] ? matrices[ email ] : [[ 'Account', 'Kampagne', 'FinalUrl', 'HTTP-Code', 'Out of stock' ]];
+			matrices[ email ] = matrices[ email ].concat( matrix );
+		});
+	}
+	for( var email in matrices ){
+		if( matrices[ email ].length > 1 ){
+			var html = matrices[ email ].map( joiner( '</td><td>' ) ).join( '</td></tr><tr><td>' );
+			html = '<table><tr><td>' + html + '</td></tr></table>';
+			mailGunHtml( email, MCC_NAME + ' ' + SCRIPT_NAME + ' - ' + _getDateString(), html );
+		}
+	}
+}
+
+
+//Helper function to format todays date
+function _getDateString() {
+    return Utilities.formatDate((new Date()), AdWordsApp.currentAccount().getTimeZone(), "yyyy-MM-dd");
+}
+
+
+function cleanUrl( url ){
+    if( WRAPPED_URLS ){ // true
+        url = url.substr( url.lastIndexOf( 'http' ) );
+		url = decodeURIComponent( url );
+        // Logger.log( url );
+    }
+    if( STRIP_QUERY_STRING ){ // true
+		if( url.indexOf( '?' ) >= 0 ){
+            url = url.split('?')[0];
+        }
+    }
+    if( url.indexOf( '{' ) >= 0 ){
+        //Let's remove the value track parameters
+        url = url.replace(/\{[0-9a-zA-Z]+\}/g, '');
+    }
+    return url;
+}
+
+
+function containedIn( baseStr ){
+	return function( searchStr ){
+		return baseStr.indexOf( searchStr ) >= 0;
+	}
+};
+
+function and( a, b ){ return a && b };
+function  or( a, b ){ return a || b };
+
+function values( obj ){
+	var arr = [];
+	for( var key in obj ){
+		var value = obj[ key ];
+		arr.push( value );
+	}
+	return arr;
+}
+function forEach( selector, process ){
+	var iterator = selector.get();
+	while( iterator.hasNext() ){
+		var item = iterator.next();
+		process( item );
+	}
+}
+function onlyFirst( selector, process ){
+	var iterator = selector.get();
+	if( iterator.hasNext() ){
+		var item = iterator.next();
+		process( item );
+	}
+}
+
+function findLabel( labelName ){
+	var iter = AdWordsApp
+			.labels()
+			.withCondition('Name = "' + labelName + '"')
+			.get();
+	if( iter.hasNext() ){
+		return optional( iter.next() );
+	}
+	return optional( null, 'Label ' + labelName + ' not found.' );
+}
+
+function createLabel( labelName ){
+	if( !findLabel( labelName ).isPresent() ){
+		AdWordsApp.createLabel( labelName );
+	}
+}
+
+
+// ####################################################
+// ####################################################
+
+function mailGunHtml( to, subject, html ){
+  return mailGunSender( to, subject, null, html );
+}
+
+function mailGun( to, subject, text ){
+  return mailGunSender( to, subject, text );
+}
+
+function mailGunSender( to, subject, text, html ){
+	if( html ){
+		if( ! text ){
+			text = 'this is supposed to be a html email. Seems like your device doesn\'t support html emails.';
+		}
+		html = '<html><body>' + html + '</body></html>';
+	}else{
+		html = null;
+	}
+	
+	return UrlFetchApp.fetch(
+		'https://api.mailgun.net/v3/mg.peakace.de/messages',
+		{
+			"method" : "post",
+			"payload" : {
+				'from' 		: "adwords_scripts@mg.peakace.de",
+				'to' 		: to,
+				'subject' 	: subject,
+				'text'		: text,
+				'html'		: html,
+			},
+			"headers": {
+				"Authorization" : "Basic YXBpOmtleS1hYWZmMmI2MGU4MmNkMWYwOTIwYWYxNDUzZWM0MDcyOA==",
+			}
+		}
+	);
+}
+
+// ####################################################
+// ####################################################
+
+
+// -----------------------------------------------
+function optional( value, message ){
+	var error = message ? new Error( message ) : new Error('No such value!');
+	var isNull = ( value === undefined || value === null );
+	return {
+		get : 			function()						{ if( isNull ){ throw error; } return value; },
+		ifPresent : 	function( consumer )			{ if( !isNull ){ consumer( value ) } },
+		peek : 			function( consumer )			{ if( !isNull ){ consumer( value ) } return this },
+		map : 			function( mapper )				{ return isNull ? this : optional( mapper( value ) ) },
+		call : 			function( method )				{ return isNull ? this : optional( value[ method ]() ) },
+		filter : 		function( predicate )			{ return isNull || predicate( value ) ? this : optional() },
+		onlyIf : 		function( method )				{ return isNull || value[ method ]() ? this : optional() },
+		isPresent : 	function()						{ return !isNull },
+		orElse : 		function( other )				{ return isNull ? other : value },
+		orElseGet : 	function( supplier )			{ return isNull ? supplier.get() : value },
+		orElseThrow : 	function( exceptionSupplier )	{ if( isNull ) throw exceptionSupplier(); return value; },
+		equals : 		function( otherValue )			{ return !isNull && value == otherValue },
+		forEach :	 	function( consumer )			{
+			if( this.isPresent() ){
+				var iterator = this.get();
+				while( iterator.hasNext() ){
+					consumer( iterator.next() );
+				}
+			}
+		},
+		toString : 		function()						{ return isNull ? 'Empty' : 'Optional< ' + value + ' >' },
+	};
+}
+// -----------------------------------------------
+
+
+function getEmails(){
+	return function( accountId ){
+		return email_receiptients;
+	};
+	/*
+	var values = readFromSheet();
+	
+	var res = {};
+	// find emails
+	for( var row = 1; row < values.length; row++ ){
+		var accountId = values[ row ][ ID_COLUMN ];
+		var emails = values[ row ][ EMAIL_COLUMN ];
+		if( emails ){
+			res[ accountId ] = emails.split(',').map( function( x ){ return x.trim(); } );
+		}
+	}
+	return res;
+	*/
+}
+function readFromSheet(){
+	var book = SpreadsheetApp.openByUrl( SPREADSHEET_URL );
+	var sheet = book.getSheetByName( SETTINGS_SHEET );
+	
+	if( ! sheet ){
+		throw new Error('no sheet "' + SETTINGS_SHEET + '" found!');
+	}
+  
+	var values = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+	return values;
+}
+
+function getDateInTimeZone( timeZone ){ // 'Europe/Berlin'
+	var now = new Date( 
+		Utilities.formatDate( 
+		new Date(),
+		timeZone,
+		'MMM dd,yyyy HH:mm:ss'
+		)
+	);
+	return now;
+}
+
+function now(){
+	return getDateInTimeZone( 'Europe/Berlin' );
+}
+
+
+function getCurrentPart(){
+	var date = new Date();
+	var hour = date.getHours();
+	if( hour > NUM_PARTS ){
+		// do everything in the first NUM_PARTS hours.
+		// -1 will not match to any campaignId % NUM_PARTS
+		return -1;
+	}
+	return hour % NUM_PARTS;
+}
+
+function hash( value ){
+	value = value + '';
+	var hash = 0;
+	if ( value.length == 0 ) return hash;
+	for (i = 0; i < value.length; i++) {
+		var char1 = value.charCodeAt(i);
+		hash = (( hash << 5 ) - hash ) + char1;
+		hash = hash & hash; // Convert to 32bit integer
+	}
+	return Math.abs( hash );
+}
+
+function computeCurrentCampaignIds( currentPart ){
+
+    var query = 'SELECT CampaignId FROM CAMPAIGN_PERFORMANCE_REPORT';
+	
+	var report = AdWordsApp.report( query );
+	var rows = report.rows();
+	
+	var res = [];
+	
+	while( rows.hasNext() ){
+		var row = rows.next();
+		
+		var campaignId = row[ 'CampaignId' ];
+		
+		if( hash( campaignId ) % NUM_PARTS == currentPart ){
+			res.push( campaignId );
+		}
+	}
+	
+	Logger.log(' count current campaigns: ' + res.length );
+	
+	return res;
+}
+
+
+function prepareLabelInfo(){
+	// find all labels creatable by this script
+	var labelInfo = {
+		labels : {},
+		campaigns : {}
+	};
+	findLabels2( 'Name STARTS_WITH "' + BAD_HTTP_CODE_LABEL_PREFIX + '"', labelInfo );
+	findLabels2( 'Name = "' + OUT_OF_STOCK_LABEL + '"', labelInfo );
+	return labelInfo;
+}
+
+function findLabels2( condition, labelInfo ){
+	forEach(
+		AdWordsApp
+			.labels()
+			.withCondition( condition ),
+		function( label ){
+			labelInfo.labels[ label.getName() ] = 1;
+			forEach(
+				label.campaigns(),
+				function( campaign ){
+					labelInfo.campaigns[ campaign.getId() ] = labelInfo.campaigns[ campaign.getId() ] || {};
+					labelInfo.campaigns[ campaign.getId() ][ label.getName() ] = 1;
+				}
+			);
+		}
+	);
+}

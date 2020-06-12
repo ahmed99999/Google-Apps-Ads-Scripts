@@ -1,0 +1,81 @@
+Manual for smx Project
+	
+    Enable Transfer Service
+        Create a dataset for transfer service
+            Go to https://console.cloud.google.com/bigquery?project=YOUR_GOOGLE_CLOUD_PROJECT_ID
+            select your project in the left hand side frame
+            click on the "Create Dataset" button
+            enter a name for the dataset
+            click on the "Create Dataset" button
+        Enable Transfer Service
+            Go to https://console.cloud.google.com/bigquery/transfers?project=YOUR_GOOGLE_CLOUD_PROJECT_ID
+            Click on "Create Trnasfer"
+            Select "Google Ads (formerly AdWords)" as source
+            Select a name for the transfer
+            Enter the name of the formerly created dataset
+            Enter Google Ads customer id
+                if the account Id is for an MCC account then all child accounts will be transfered into bigquery ( you pay $2.50 per month for each account)
+                if the account id is a non-MCC account then only this account is transfered
+            Click "save"
+    Create Ads Script: Transfer Service Augmenter
+        Go to https://ads.google.com/aw/bulk/scripts
+        Create a new script
+        Copy-paste the source code for transfer_service_augmenter.js into Google Ads UI
+        Click on "Advanced APIs" and enable "Bigquery"
+        Fill out the settings
+            BIGQUERY_PROJECT_ID
+            BIGQUERY_DATASET_ID - use the same dataset as for transfer service
+        Save the script
+        Run
+            authorization dialog is shown
+            Authorize the script to access Bigquery
+    Create Dictionary Sheet
+        Go to https://docs.google.com/spreadsheets
+        Click on +
+        Write "Brand" into A1
+            put your brand keywords into first column
+        Write "Location" into b1
+            put your location keywords into second column
+        Write "Property" into C1
+            put your property keywords into third column
+        Copy the URL ( you will need it to fill the settings of the app script )
+    Create App Script: nl_api.js
+        Go to https://script.google.com/home
+        Click on "New Script"
+        Click on "open Project"
+        Name the script
+        In the tools bar select "main" function 
+        Enable advanced APIs
+            Go to Resources > Advanced Google Services..
+            enable BigQuery API
+            enable Google Sheets API ( this is neccessary for the dictionary feature to work )
+        Fill out script settings
+            TRANSFER_SERVICE_ACCOUNT_ID
+                customer id which was used to enable transfer service
+            ACCOUNT_ID
+                this must be a non-MCC account id
+                if TRANSFER_SERVICE_ACCOUNT_ID is a non-MCC account then this must be set to the same value
+                if TRANSFER_SERVICE_ACCOUNT_ID is an MCC account then this must be a child of transfer service account
+            sheet url from previous step
+            MIN_SQ_CLICKS_FOR_TRAINING
+                choose this depending on the size of your account
+                    it should be rather as large as possible
+                    but not too large
+                default is 100
+                if the script fails with "Could not find any search queries. Try to set MIN_SQ_CLICKS_FOR_TRAINING to a lower value." Follow this suggestion.
+            NL_API_KEY
+                Go to https://console.cloud.google.com/apis/credentials?project=YOUR_GOOGLE_CLOUD_PROJECT_ID
+                Click on "Create new credentials"
+                choose "API key"
+                a popup will show your newly created API key
+            TRANSFER_SERVICE_DATASET_ID
+                put the name of the dataset here which contains the contents of transfer service 
+            DATASET_ID
+                 create a new dataset in bigquery and use its name here
+            other settings can by kept set to default values
+        Save
+        Wait until Transfer Service run is finished
+        Execute the script
+        Authorize the script to access Bigquery and Drive
+        wait some (5 to 10) minutes for the script to finish its job
+        After execution of the script all tables and views should have been created in bigquery

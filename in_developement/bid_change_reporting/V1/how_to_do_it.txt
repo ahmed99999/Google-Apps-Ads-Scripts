@@ -1,0 +1,20 @@
+﻿
+Max-Cpc Change Reporting Script
+	- Script sends a daily digest on the bid changes as one (long) csv-file attached to the email.
+	- The script is going to be a MCC-Level-Script. This means that it can monitor up to 50 accounts.
+	- The script stores the previous state of AdWords accounts in Bigquery in order to be able to report changes.
+	- The script sends emails to users once a day at preset hour and reports all active Keyword-Max-Cpc-changes since last reporting ( the day before ).		
+	- A csv-file is attached with all changes to the email.
+		- Columns are: Account, Campaign, Adgroup, Old-Max-Cpc, New-Max-Cpc.
+	- Installation in Casumo MCC ( Somebody from Casumo with access to their BigQuery will need to authorize the script. )
+	- Developement Estimate: 10 hours
+
+Ads Creation Reporting Script
+	- Script notifices user daily when new ads are added to accounts and attaches newly created ads as a csv-file to email.
+	- The script is going to be a MCC-Level-Script. This means that it can monitor up to 50 accounts.
+	- The script stores the previous state of AdWords accounts in Bigquery in order to be able to report changes.
+	- The script sends emails to users once a day at preset hour and reports all Ads created since last reporting ( the day before ).
+		- A csv-file is attached with all changes to the email.
+		- Columns are: Account, Campaign, Adgroup, Headline1, Headline2, Description.
+	- Installation in Casumo MCC ( Somebody from Casumo with access to their BigQuery will need to authorize the script. )
+	- Developement Estimate: 10 hours

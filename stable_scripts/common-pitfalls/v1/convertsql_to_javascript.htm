@@ -1,0 +1,141 @@
+<meta charset="UTF-8">
+<title>SQL_Converter</title>
+<body>
+<pre id="output" style=""></pre>
+<textarea style="visibility:hidden;width:12;height:12;">
+
+
+
+
+
+
+
+-- negative_keyword_in_ad
+SELECT
+	CAST( customer.ExternalCustomerId as STRING ) as ExternalCustomerId,
+	ifnull( CustomerDescriptiveName, AccountDescriptiveName ) AS AccountName,
+	CampaignName,
+	AdGroupName,
+	CampaignStatus,
+	AdGroupStatus,
+	Status,
+	neg.Text as negative_keyword,
+	neg.MatchType as negative_match_type,
+	ad.HeadLinePart1,
+	ad.HeadLinePart2,
+	ad.description,
+	CAST( ad.CampaignId as STRING ) as CampaignId,
+	CAST( ad.AdGroupId as STRING ) as AdGroupId
+FROM (
+	SELECT
+		ExternalCustomerId,
+		CampaignId,
+		Text,
+		MatchType
+	FROM `biddy-io.peak_ace_active_clients_transfer.CampaignNegativeKeywords_1036246249`
+	WHERE TRUE
+		AND _LATEST_DATE = _DATA_DATE
+		AND MatchType != 'EXACT'
+) as neg
+JOIN (
+	SELECT
+		ExternalCustomerId,
+		CampaignId,
+		AdGroupId,
+		HeadLinePart1,
+		HeadLinePart2,
+		description,
+		Status
+	FROM `biddy-io.peak_ace_active_clients_transfer.Ad_1036246249`
+	WHERE TRUE
+		AND _DATA_DATE = _LATEST_DATE
+		AND Status IN ( 'ENABLED', 'PAUSED' )
+	) as ad
+	ON ad.ExternalCustomerId = neg.ExternalCustomerId AND ad.CampaignId = neg.CampaignId
+JOIN (
+	SELECT
+		ExternalCustomerId,
+		CampaignId,
+		AdGroupName,
+		AdGroupId,
+		AdGroupStatus
+	FROM `biddy-io.peak_ace_active_clients_transfer.AdGroup_1036246249`
+	WHERE TRUE
+		AND _DATA_DATE = _LATEST_DATE
+		AND AdGroupStatus IN ( 'ENABLED', 'PAUSED' )
+	) as adgroup
+	ON ad.ExternalCustomerId = adgroup.ExternalCustomerId AND ad.CampaignId = adgroup.CampaignId AND ad.AdGroupId = adgroup.AdGroupId
+JOIN (
+	SELECT
+		ExternalCustomerId,
+		CampaignName,
+		CampaignId,
+		CampaignStatus
+	FROM `biddy-io.peak_ace_active_clients_transfer.Campaign_1036246249`
+	WHERE TRUE
+		AND ( EndDate IS NULL OR EndDate >= CURRENT_DATE( 'Europe/Berlin' ) )
+		AND _DATA_DATE = _LATEST_DATE
+		AND CampaignStatus IN ( 'ENABLED', 'PAUSED' )
+	) as campaign
+	ON ad.ExternalCustomerId = campaign.ExternalCustomerId AND ad.CampaignId = campaign.CampaignId
+JOIN `biddy-io.peak_ace_active_clients_transfer.Customer_1036246249` as customer 
+	ON neg.ExternalCustomerId = customer.ExternalCustomerId
+    AND customer._LATEST_DATE = customer._DATA_DATE
+WHERE TRUE
+  AND (
+    FALSE
+    OR REGEXP_CONTAINS( CONCAT( ' ', ad.HeadLinePart1, ' ' ), CONCAT( ' ', REGEXP_REPLACE( neg.Text, '["\\+\\-\\[\\]]', '' ), ' ' ) )
+    OR REGEXP_CONTAINS( CONCAT( ' ', ad.HeadLinePart2, ' ' ), CONCAT( ' ', REGEXP_REPLACE( neg.Text, '["\\+\\-\\[\\]]', '' ), ' ' ) )
+    OR REGEXP_CONTAINS( CONCAT( ' ', ad.Description, ' ' ), CONCAT( ' ', REGEXP_REPLACE( neg.Text, '["\\+\\-\\[\\]]', '' ), ' ' ) )
+)
+
+
+
+
+
+
+
+
+</textarea>
+
+</body>
+<script>
+
+var BIGQUERY_PROJECT_ID = 'biddy-io';
+var BIGQUERY_DATASET_ID = 'peak_ace_active_clients_transfer';
+var MCC_ID = 1036246249;
+var VIEW_PREFIX = '2';
+
+
+var ta = document.querySelector('textarea');
+var queries = ta.value.split( '\n\n' ).map( a => a.trim() ).filter( a => a.length > 0 );
+
+var res = '';
+
+queries.forEach( query => {
+	var split = query.split('\n');
+
+	var first = '';
+	if( split[ 0 ].substring( 0, 2 ) == '--' ){
+		first = '\n\t' + split[ 0 ].substring( 3 ).toUpperCase() + ' : [\n';
+		split.shift();
+	}
+
+	res += first + split
+		.map( row => row.replace( /\\/g, '\\\\' ) )
+		.map( row => row.replace( /'/g, '\\\'' ) )
+		.map( row => row.replace( new RegExp( '`' + BIGQUERY_PROJECT_ID + '.' + BIGQUERY_DATASET_ID + '.', 'g'),
+			'`\' + BIGQUERY.PROJECT_ID + \'\.\' + BIGQUERY.DATASET_ID + \'\.' ) )
+		.map( row => row.replace( new RegExp( MCC_ID + '`', 'g' ), '\' + ACCOUNT_ID + \'`' ) )
+		.map( row => '\t\t\'' + row + '\',' )
+		.map( row => row.replace( new RegExp( '\\.' + VIEW_PREFIX ), '.\' + VIEW_PREFIX + \'' ) )
+		.join('\n')
+		+ '\n\t].join( \'\\n\' ),'
+	;
+});
+document.getElementById( 'output' ).innerHTML = res;
+
+//ta.focus();
+//setTimeout( 'ta.select();', 200 );
+
+</script>

@@ -1,0 +1,150 @@
+<meta charset="UTF-8">
+<title>SQL_Converter</title>
+<body>
+<pre id="output" style=""></pre>
+<textarea style="visibility:hidden;width:12;height:12;">
+
+
+
+
+-- campaign_negative_keyword_conflict
+#StandardSQL
+SELECT
+	AccountName,
+	ExternalCustomerId,
+	CampaignName,
+	CampaignId,
+	keyword_ as keyword,
+	CampaignStatus,
+	Status,
+	negative_keyword,
+	keyword_match_type as match_type,
+	neg_match_type as match_type_of_negative_keyword
+FROM (
+	SELECT
+		ifnull( CustomerDescriptiveName,  AccountDescriptiveName ) as AccountName,
+		CAST( customer.ExternalCustomerId as STRING ) as ExternalCustomerId,
+		CAST( campaign.CampaignId as STRING ) as CampaignId,
+		campaign.CampaignName,
+		keyword.Criteria as keyword_,
+		campaign.CampaignStatus,
+		keyword.Status,
+		REGEXP_REPLACE( REGEXP_REPLACE( neg.Text, '^["\\[\\+]', '' ), '["\\]]$', '' ) as negative_keyword,
+		keyword.KeywordMatchType as keyword_match_type,
+		neg.MatchType as neg_match_type,
+		(
+			select ARRAY_TO_STRING(
+				(
+					array(
+						select x
+						from unnest( split( REGEXP_REPLACE( REGEXP_REPLACE( keyword.Criteria, '\\s\\+', ' ' ), '^\\+', '' ), ' ' ) ) as x
+						ORDER BY x
+					)
+				),
+				' '
+			)
+		) as keyword_sorted,
+		(
+			select ARRAY_TO_STRING(
+				(
+					array(
+						select x
+						from unnest( SPLIT( REGEXP_REPLACE( REGEXP_REPLACE( REGEXP_REPLACE( neg.Text, '\\s\\+', ' ' ), '^["\\[\\+]', '' ), '["\\]]$', '' ), ' ' ) ) as x
+						ORDER BY x
+					)
+				),
+				' '
+			)
+		) as neg_sorted
+	FROM `biddy-io.peak_ace_active_clients_transfer.Keyword_1036246249` as keyword
+	JOIN `biddy-io.peak_ace_active_clients_transfer.CampaignNegativeKeywords_1036246249` as neg ON keyword.ExternalCustomerId = neg.ExternalCustomerId AND keyword.CampaignId = neg.CampaignId
+	JOIN `biddy-io.peak_ace_active_clients_transfer.Campaign_1036246249` as campaign ON keyword.ExternalCustomerId = campaign.ExternalCustomerId AND keyword.CampaignId = campaign.CampaignId
+	JOIN `biddy-io.peak_ace_active_clients_transfer.Customer_1036246249` as customer ON keyword.ExternalCustomerId = customer.ExternalCustomerId
+	WHERE TRUE
+		AND NOT keyword.IsNegative
+		AND keyword.Status IN ( 'ENABLED', 'PAUSED' )
+		AND campaign.CampaignStatus IN ( 'ENABLED', 'PAUSED' )
+		AND campaign._LATEST_DATE = campaign._DATA_DATE
+		AND customer._LATEST_DATE = customer._DATA_DATE
+		AND keyword._LATEST_DATE = keyword._DATA_DATE
+		AND neg._LATEST_DATE = neg._DATA_DATE
+	GROUP BY
+		customer.ExternalCustomerId,
+		AccountName,
+		campaign.CampaignName,
+		CampaignId,
+		keyword.Criteria,
+		keyword.KeywordMatchType,
+		campaign.CampaignStatus,
+		keyword.Status,
+		neg.Text,
+		neg.MatchType
+)
+WHERE TRUE
+	AND (
+		( neg_match_type = 'EXACT'  AND negative_keyword = keyword_ AND keyword_match_type = 'EXACT' )
+		OR ( neg_match_type = 'PHRASE' AND REGEXP_CONTAINS( CONCAT( ' ', keyword_, ' ' ), CONCAT( ' ',  REGEXP_REPLACE( negative_keyword, '[+]', '\\\\+' ), ' ' ) ) )
+		OR ( neg_match_type = 'BROAD'  AND REGEXP_CONTAINS( CONCAT( ' ', keyword_sorted, ' ' ),
+			CONCAT( ' ', ARRAY_TO_STRING( SPLIT(  REGEXP_REPLACE( neg_sorted, '[+]', '\\\\+' ), ' ' ), '\\s(\\w*\\s)*' ), ' ' ) ) )
+	)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</textarea>
+
+</body>
+<script>
+
+var BIGQUERY_PROJECT_ID = 'biddy-io';
+var BIGQUERY_DATASET_ID = 'peak_ace_active_clients_transfer';
+var MCC_ID = 1036246249;
+var VIEW_PREFIX = '2';
+
+
+var ta = document.querySelector('textarea');
+var queries = ta.value.split( '\n\n' ).map( a => a.trim() ).filter( a => a.length > 0 );
+
+var res = '';
+
+queries.forEach( query => {
+	var split = query.split('\n');
+
+	var first = '';
+	if( split[ 0 ].substring( 0, 2 ) == '--' ){
+		first = '\n\t' + split[ 0 ].substring( 3 ).toUpperCase() + ' : [\n';
+		split.shift();
+	}
+
+	res += first + split
+		.map( row => row.replace( /\\/g, '\\\\' ) )
+		.map( row => row.replace( /'/g, '\\\'' ) )
+		.map( row => row.replace( new RegExp( '`' + BIGQUERY_PROJECT_ID + '.' + BIGQUERY_DATASET_ID + '.', 'g'),
+			'`\' + BIGQUERY.PROJECT_ID + \'\.\' + BIGQUERY.DATASET_ID + \'\.' ) )
+		.map( row => row.replace( new RegExp( MCC_ID + '`', 'g' ), '\' + ACCOUNT_ID + \'`' ) )
+		.map( row => '\t\t\'' + row + '\',' )
+		.map( row => row.replace( new RegExp( '\\.' + VIEW_PREFIX ), '.\' + VIEW_PREFIX + \'' ) )
+		.join('\n')
+		+ '\n\t].join( \'\\n\' ),'
+	;
+});
+document.getElementById( 'output' ).innerHTML = res;
+
+//ta.focus();
+//setTimeout( 'ta.select();', 200 );
+
+</script>

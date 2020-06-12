@@ -1,0 +1,20 @@
+Fehlerhafte Google Sheets
+	1. Sheet kann nicht geöffnet werden
+		- Tritt für Airbnb-Adgroup-Content-Checker auf.
+			- URL: https://docs.google.com/spreadsheets/u/0/d/1IYqSmorG9WTZfr07Dc9ChUIEkab5Sg0zFyOFDBwcPpo/edit#gid=0
+			- Screenshot: https://www.screencast.com/t/KrEnCuozj
+		- Tritt für Airbnb-Settings-Checker auf.
+			- URL: https://docs.google.com/spreadsheets/d/1IYqSmorG9WTZfr07Dc9ChUIEkab5Sg0zFyOFDBwcPpo/edit?ouid=102099930483905776570&usp=sheets_home&ths=true
+		- Es ist nicht möglich eine Kopie zu erstellen: https://www.screencast.com/t/GvHznPND54pR
+		- Kann aus Drive nicht runtergeladen werden (selber fehler)
+	2. Sheet kann geöffnet, aber nicht bearbeitet werden.
+		- Wenn man es bearbeitet, dann kommt die Meldung, dass die Verbindung zu Google Sheets abgebrochen ist und wiederhergestellt wird (was nie passiert).
+		- Tritt für Campaign Settings Checker für Airbnb auf.
+			- Screenshot: https://www.screencast.com/t/4BsEIKSf
+			- URL: https://docs.google.com/spreadsheets/d/1PHL82cdCjWaHBCT_EuMNT5Lrw5CfcqHXQVfprcE6l3E/edit#gid=0
+- Doku liefert nichts Brauchbares:
+	- https://support.google.com/a/answer/2992016?hl=de
+- Support schlägt vor eine Kopie zu erstellen (was nicht klappt)
+	- Google Docs Help Forum: https://productforums.google.com/forum/#!topic/docs/Ov-zzvZSgbk;context-place=topicsearchin/docs/category$3Afirefox%7Csort:relevance%7Cspell:false
+	- Screenshot: https://www.screencast.com/t/Ng2xoeUcG9I8
+- Screenshot vom Google-Drive mit einem Kaputten Sheet: https://www.screencast.com/t/sFrhduE51D0

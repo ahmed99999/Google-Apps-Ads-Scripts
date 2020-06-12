@@ -1,0 +1,174 @@
+- excluded experemental campaigns
+
+- prefix for views changed from "biddy_" to "pitfall_"
+
+
+- renamed
+	- adgroup_no_etas to adgroup_no_ads
+	- adgroup_too_few_etas to adgroup_too_few_ads
+	- adgroup_too_many_active_etas to adgroup_too_many_enabled_ads
+	- excluded_content_labels to missing_excluded_content_labels
+
+- removed
+	- excluded_geo_locations
+	- ad_duplicate_special_chars_in_description
+	- close_variants
+	-
+	- duplicate_bmm_keywords_in_campaign
+	- keyword_duplicate_bmm_fragments
+	- keyword_contains_dot
+	- keyword_contains_capital
+	- keyword_contains_dash
+	- keyword_wrongly_modified_broad
+	- keyword_wrongly_modified_broad
+	- keyword_plus_in_non_broad
+	- keyword_partly_modified_broad
+	- keyword_unmodified_broad
+	- quotes_in_non_phrase
+	- brackets_in_non_exact
+	- duplicate_keyword_in_campaign
+	- shared_negative_keyword_in_ad ( Exceeded maximum execution time )
+
+
+- new
+	- keyword_problems
+
+
+
+- added columnts
+	- missing_excluded_content_labels
+		- MissingExcludedContentLabels
+	- adgroup_too_few_ads
+		- CountAds
+	- adgroup_too_many_exact_keywords
+		- countExactKeywords
+	- adgroup_too_many_broad_keywords
+		- countBroadKeywords
+	- adgroup_too_many_enabled_ads
+		- countAds
+	- campaign_missing_mobile_bid_modifier
+		- Clicks
+	- campaign_non_standard_delivery_method
+		- SearchBudgetLostImpressionShares
+	- location_bid_modifier_missing
+		- missing_bid_modifier_share
+	- search_queries_triggered_by_more_than_one_keyword
+		- Rank
+		- Impressions,
+		- Clicks,
+		- Cost,
+		- Conversions,
+		- Cpo,
+		- Cvr,
+
+removed columns
+	- campaign_missing_mobile_bid_modifier
+		- TargetingSetting,
+		- DeliveryMethod,
+		- AdRotationType
+	- campaign_target_and_bid
+		- CampaignMobileBidModifier
+		- DeliveryMethod
+		- AdRotationType
+	- campaign_non_standard_delivery_method
+		- AdRotationType
+		- TargetingSetting
+		- CampaignMobileBidModifier
+	- campaign_rotation_type_not_optimized
+		- DeliveryMethod
+		- TargetingSetting
+		- CampaignMobileBidModifier
+	- location_bid_modifier_missing
+		- GeoLocationCount
+		- GeoLocationWithoutBidModifierCount
+	- search_queries_triggered_by_more_than_one_keyword
+		- criteriaCount
+	
+
+-------------------------
+
+
+
+- ads
+	- AND AdType IN (
+				'GMAIL_AD',
+				'MULTI_ASSET_RESPONSIVE_DISPLAY_AD',
+				'TEMPLATE_AD',
+				'CALL_ONLY_AD',
+				'EXPANDED_TEXT_AD',
+				'RESPONSIVE_SEARCH_AD',
+				'TEXT_AD',
+				'RESPONSIVE_DISPLAY_AD',
+				'IMAGE_AD',
+				'DYNAMIC_SEARCH_AD',
+				'EXPANDED_DYNAMIC_SEARCH_AD'
+			)
+	- AND AdGroupType IN ( 'SEARCH_STANDARD', 'DISPLAY_STANDARD' )
+- dsa
+	- added EXPANDED_DYNAMIC_SEARCH_AD to all dsa-pitfalls
+- 
+
+
+
+SELECT
+  *
+FROM `biddy-io.peak_ace_active_clients_transfer.Audience_1036246249` AS audience
+WHERE TRUE
+  AND audience.ExternalCustomerId = 7056468392
+  --AND AdGroupId = 22407332646
+  AND Criteria = 'boomuserlist::33425526'
+	AND audience._DATA_DATE = audience._LATEST_DATE
+	--AND CriterionAttachmentLevel = 'ADGROUP'
+	--AND Status IN ( 'ENABLED', 'PAUSED' )
+
+
+SELECT
+  *
+FROM `biddy-io.peak_ace_active_clients_transfer.Criteria_1036246249` AS criteria
+WHERE TRUE
+  AND criteria.ExternalCustomerId = 7056468392
+  --AND AdGroupId = 22407332646
+	AND criteria._DATA_DATE = criteria._LATEST_DATE
+  AND CriteriaType = 'USER_LIST'
+	AND Status IN ( 'ENABLED', 'PAUSED' )
+  --AND CpcBidSource NOT IN ('ADGROUP', 'CRITERION' )
+
+
+
+
+
+
+-- ad_spend_by_campaign_type
+SELECT
+  campaign.AdvertisingChannelType,
+  campaign.AdvertisingChannelSubType,
+  round( sum( Cost ) / 1000000 ) AS Cost
+FROM `biddy-io.peak_ace_active_clients_transfer.Campaign_1036246249` AS campaign
+JOIN `biddy-io.peak_ace_active_clients_transfer.CampaignBasicStats_1036246249` AS stat
+  ON stat.ExternalCustomerId = campaign.ExternalCustomerId
+  AND stat.CampaignId = campaign.CampaignId
+  AND DATE_DIFF( CURRENT_DATE( 'Europe/Berlin' ), stat._DATA_DATE, DAY ) <= 30
+WHERE TRUE
+	AND ( campaign.EndDate IS NULL OR campaign.EndDate >= CURRENT_DATE( 'Europe/Berlin' ) )
+	AND campaign.CampaignStatus IN ( 'ENABLED', 'PAUSED' )
+	AND campaign._LATEST_DATE = campaign._DATA_DATE
+GROUP BY
+  campaign.AdvertisingChannelType,
+  campaign.AdvertisingChannelSubType
+ORDER BY cost DESC
+
+
+
+
+-- duplicate_bmm_keywords_in_campaign
+select
+  JSON_EXTRACT( data, '$.AdGroupName' ) as adgroup,
+  JSON_EXTRACT( data, '$.Rank' ) as rank,
+  JSON_EXTRACT( data, '$.Criteria' ) as keyword
+from `biddy-io.biddy.pitfall_data2` 
+where true
+  and pitfall = 'duplicate_bmm_keywords_in_campaign'
+  and _PARTITIONDATE = CURRENT_DATE()
+  and account_id = '7552507137'
+ORDER BY account_id, JSON_EXTRACT( data, '$.Rank' )
+
