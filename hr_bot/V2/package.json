@@ -11,7 +11,7 @@
   "dependencies": {
     "chrome-launcher": "^0.12.0",
     "chrome-remote-interface": "^0.28.1",
-    "electron": "^7.1.9",
+    "electron": "^9.4.0",
     "electron-toaster": "^2.0.4",
     "materialize-css": "^1.0.0-rc.2",
     "node-xlsx": "^0.15.0",
