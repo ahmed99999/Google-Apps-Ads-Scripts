@@ -9,7 +9,7 @@
   "author": "Ahmed Bakhabou",
   "license": "ISC",
   "dependencies": {
-    "chrome-launcher": "^0.12.0",
+    "chrome-launcher": "^0.13.2",
     "chrome-remote-interface": "^0.28.1",
     "electron": "^7.1.9",
     "electron-toaster": "^2.0.4",
